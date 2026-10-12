@@ -55,6 +55,7 @@ frontend/dist/
 frontend/dist-ssr/
 frontend/*.local
 frontend/*.tsbuildinfo
+frontend/package-lock.json
 
 # ==========================================
 # 3. BACKEND (Java + Maven + Spring Boot)
