@@ -1,21 +1,250 @@
 import { ChangeEvent, DragEvent, useRef, useState } from "react";
-import { CheckCircle2, CloudUpload, FileText, FileUp, Info, LoaderCircle, Trash2 } from "lucide-react";
+import {
+  CheckCircle2,
+  CloudUpload,
+  FileText,
+  FileUp,
+  Info,
+  LoaderCircle,
+  Trash2,
+} from "lucide-react";
 import { api } from "../api/client";
 export default function AdminPage() {
-  const [files, setFiles] = useState<File[]>([]); const [dragging, setDragging] = useState(false); const [uploading, setUploading] = useState(false); const [success, setSuccess] = useState(""); const [error, setError] = useState(""); const fileRef = useRef<HTMLInputElement>(null);
-  const addFiles = (incoming: FileList | File[]) => { const list = Array.from(incoming); setFiles(current => { const seen = new Set(current.map(file => `${file.name}-${file.size}`)); return [...current, ...list.filter(file => !seen.has(`${file.name}-${file.size}`))]; }); setSuccess(""); setError(""); };
-  const onFileChange = (event: ChangeEvent<HTMLInputElement>) => { if (event.target.files) addFiles(event.target.files); event.target.value = ""; };
-  const onDrop = (event: DragEvent<HTMLDivElement>) => { event.preventDefault(); setDragging(false); if (event.dataTransfer.files) addFiles(event.dataTransfer.files); };
-  const upload = async () => { if (!files.length || uploading) return; setUploading(true); setError(""); setSuccess(""); try { const result = await api.uploadKnowledge(files); setSuccess(`${result.uploaded} file${result.uploaded === 1 ? "" : "s"} uploaded successfully. The knowledge base is being updated.`); setFiles([]); } catch { setError("Upload failed. Check your connection and file requirements, then try again."); } finally { setUploading(false); } };
-  return <div className="min-h-screen bg-slate-50/60"><header className="flex h-20 items-center justify-between border-b border-slate-200 bg-white px-6 sm:px-10"><div><div className="text-[10px] font-bold tracking-[.2em] text-blue-600">ADMINISTRATION</div><h2 className="mt-1 text-base font-semibold text-slate-900">Knowledge base</h2></div><div className="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-700"><ShieldIcon/><span>Admin tools</span></div></header>
-    <div className="mx-auto max-w-4xl px-5 py-10 sm:px-8 sm:py-14"><div className="mb-8 flex items-start gap-4"><div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-blue-50 text-blue-600"><FileUp size={22}/></div><div><h1 className="text-2xl font-semibold tracking-tight text-slate-950">Manage your knowledge</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">Upload trusted documents so the assistant can answer employee questions with relevant information.</p></div></div>
-      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"><div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 px-6 py-5"><div><h3 className="font-semibold text-slate-900">Add documents</h3><p className="mt-1 text-sm text-slate-500">Choose files from your computer or drag them into the area below.</p></div><span className="rounded-full bg-slate-100 px-2.5 py-1.5 text-[10px] font-bold tracking-wider text-slate-500">DOCUMENT INGESTION</span></div>
-        <div onDragOver={event => { event.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={onDrop} className={`mx-5 mt-5 flex min-h-64 flex-col items-center justify-center rounded-xl border-2 border-dashed px-5 py-9 text-center transition sm:mx-6 ${dragging ? "border-blue-500 bg-blue-50" : "border-slate-200 bg-slate-50/70 hover:border-slate-300"}`}><div className="grid h-12 w-12 place-items-center rounded-2xl bg-white text-blue-600 shadow-sm ring-1 ring-slate-200"><CloudUpload size={24}/></div><h3 className="mt-4 font-semibold text-slate-900">Drop your files here</h3><p className="mt-1 text-sm text-slate-500">or <button className="font-semibold text-blue-600 hover:text-blue-700" onClick={() => fileRef.current?.click()} type="button">browse files</button> from your device</p><span className="mt-3 text-xs text-slate-400">PDF, DOCX, TXT, MD · Multiple files supported</span><input ref={fileRef} type="file" multiple accept=".pdf,.doc,.docx,.txt,.md" onChange={onFileChange} hidden/></div>
-        {files.length > 0 && <div className="px-5 pt-5 sm:px-6"><div className="mb-2 flex items-center justify-between"><h4 className="text-sm font-semibold text-slate-800">Selected files</h4><span className="text-xs text-slate-500">{files.length} item{files.length === 1 ? "" : "s"}</span></div><div className="divide-y divide-slate-100 rounded-xl border border-slate-200">{files.map((file,index) => <div key={`${file.name}-${file.size}-${index}`} className="flex items-center gap-3 px-3 py-3"><div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-blue-50 text-blue-600"><FileText size={17}/></div><div className="min-w-0 flex-1"><div className="truncate text-sm font-medium text-slate-800">{file.name}</div><div className="mt-0.5 text-xs text-slate-400">{formatBytes(file.size)}</div></div><button onClick={() => setFiles(current => current.filter((_,i) => i !== index))} aria-label={`Remove ${file.name}`} className="rounded-lg p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600"><Trash2 size={16}/></button></div>)}</div></div>}
-        {error && <div className="mx-5 mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 sm:mx-6">{error}</div>}{success && <div className="mx-5 mt-4 flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 sm:mx-6"><CheckCircle2 size={17} className="mt-0.5 shrink-0"/>{success}</div>}
-        <div className="mt-5 flex flex-col gap-4 border-t border-slate-100 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6"><div className="flex items-start gap-2 text-xs leading-5 text-slate-500"><Info size={15} className="mt-0.5 shrink-0"/>Only upload approved, work-related documents.</div><button onClick={() => void upload()} disabled={!files.length || uploading} className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700">{uploading ? <><LoaderCircle className="animate-spin" size={16}/>Uploading…</> : <><CloudUpload size={16}/>Upload documents</>}</button></div>
-      </section><div className="mt-4 flex items-start gap-2 px-1 text-xs leading-5 text-slate-400"><Info size={14} className="mt-0.5 shrink-0"/>Uploaded documents may take a short time to become searchable while they are processed and indexed.</div>
-    </div></div>;
+  const [files, setFiles] = useState<File[]>([]);
+  const [dragging, setDragging] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
+  const fileRef = useRef<HTMLInputElement>(null);
+  const addFiles = (incoming: FileList | File[]) => {
+    const list = Array.from(incoming);
+    setFiles((current) => {
+      const seen = new Set(current.map((file) => `${file.name}-${file.size}`));
+      return [
+        ...current,
+        ...list.filter((file) => !seen.has(`${file.name}-${file.size}`)),
+      ];
+    });
+    setSuccess("");
+    setError("");
+  };
+  const onFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files) addFiles(event.target.files);
+    event.target.value = "";
+  };
+  const onDrop = (event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setDragging(false);
+    if (event.dataTransfer.files) addFiles(event.dataTransfer.files);
+  };
+  const upload = async () => {
+    if (!files.length || uploading) return;
+    setUploading(true);
+    setError("");
+    setSuccess("");
+    try {
+      const result = await api.uploadKnowledge(files);
+      setSuccess(
+        `${result.uploaded} file${result.uploaded === 1 ? "" : "s"} uploaded successfully. The knowledge base is being updated.`,
+      );
+      setFiles([]);
+    } catch {
+      setError(
+        "Upload failed. Check your connection and file requirements, then try again.",
+      );
+    } finally {
+      setUploading(false);
+    }
+  };
+  return (
+    <div className="min-h-screen bg-slate-50/60">
+      <header className="flex h-20 items-center justify-between border-b border-slate-200 bg-white px-6 sm:px-10">
+        <div>
+          <div className="text-[10px] font-bold tracking-[.2em] text-blue-600">
+            ADMINISTRATION
+          </div>
+          <h2 className="mt-1 text-base font-semibold text-slate-900">
+            Knowledge base
+          </h2>
+        </div>
+        <div className="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-700">
+          <ShieldIcon />
+          <span>Admin tools</span>
+        </div>
+      </header>
+      <div className="mx-auto max-w-4xl px-5 py-10 sm:px-8 sm:py-14">
+        <div className="mb-8 flex items-start gap-4">
+          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-blue-50 text-blue-600">
+            <FileUp size={22} />
+          </div>
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-950">
+              Manage your knowledge
+            </h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
+              Upload trusted documents so the assistant can answer employee
+              questions with relevant information.
+            </p>
+          </div>
+        </div>
+        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 px-6 py-5">
+            <div>
+              <h3 className="font-semibold text-slate-900">Add documents</h3>
+              <p className="mt-1 text-sm text-slate-500">
+                Choose files from your computer or drag them into the area
+                below.
+              </p>
+            </div>
+            <span className="rounded-full bg-slate-100 px-2.5 py-1.5 text-[10px] font-bold tracking-wider text-slate-500">
+              DOCUMENT INGESTION
+            </span>
+          </div>
+          <div
+            onDragOver={(event) => {
+              event.preventDefault();
+              setDragging(true);
+            }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={onDrop}
+            className={`mx-5 mt-5 flex min-h-64 flex-col items-center justify-center rounded-xl border-2 border-dashed px-5 py-9 text-center transition sm:mx-6 ${dragging ? "border-blue-500 bg-blue-50" : "border-slate-200 bg-slate-50/70 hover:border-slate-300"}`}
+          >
+            <div className="grid h-12 w-12 place-items-center rounded-2xl bg-white text-blue-600 shadow-sm ring-1 ring-slate-200">
+              <CloudUpload size={24} />
+            </div>
+            <h3 className="mt-4 font-semibold text-slate-900">
+              Drop your files here
+            </h3>
+            <p className="mt-1 text-sm text-slate-500">
+              or{" "}
+              <button
+                className="font-semibold text-blue-600 hover:text-blue-700"
+                onClick={() => fileRef.current?.click()}
+                type="button"
+              >
+                browse files
+              </button>{" "}
+              from your device
+            </p>
+            <span className="mt-3 text-xs text-slate-400">
+              PDF, DOCX, TXT, MD · Multiple files supported
+            </span>
+            <input
+              ref={fileRef}
+              type="file"
+              multiple
+              accept=".pdf,.doc,.docx,.txt,.md"
+              onChange={onFileChange}
+              hidden
+            />
+          </div>
+          {files.length > 0 && (
+            <div className="px-5 pt-5 sm:px-6">
+              <div className="mb-2 flex items-center justify-between">
+                <h4 className="text-sm font-semibold text-slate-800">
+                  Selected files
+                </h4>
+                <span className="text-xs text-slate-500">
+                  {files.length} item{files.length === 1 ? "" : "s"}
+                </span>
+              </div>
+              <div className="divide-y divide-slate-100 rounded-xl border border-slate-200">
+                {files.map((file, index) => (
+                  <div
+                    key={`${file.name}-${file.size}-${index}`}
+                    className="flex items-center gap-3 px-3 py-3"
+                  >
+                    <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-blue-50 text-blue-600">
+                      <FileText size={17} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-medium text-slate-800">
+                        {file.name}
+                      </div>
+                      <div className="mt-0.5 text-xs text-slate-400">
+                        {formatBytes(file.size)}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() =>
+                        setFiles((current) =>
+                          current.filter((_, i) => i !== index),
+                        )
+                      }
+                      aria-label={`Remove ${file.name}`}
+                      className="rounded-lg p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {error && (
+            <div className="mx-5 mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 sm:mx-6">
+              {error}
+            </div>
+          )}
+          {success && (
+            <div className="mx-5 mt-4 flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 sm:mx-6">
+              <CheckCircle2 size={17} className="mt-0.5 shrink-0" />
+              {success}
+            </div>
+          )}
+          <div className="mt-5 flex flex-col gap-4 border-t border-slate-100 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+            <div className="flex items-start gap-2 text-xs leading-5 text-slate-500">
+              <Info size={15} className="mt-0.5 shrink-0" />
+              Only upload approved, work-related documents.
+            </div>
+            <button
+              onClick={() => void upload()}
+              disabled={!files.length || uploading}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+            >
+              {uploading ? (
+                <>
+                  <LoaderCircle className="animate-spin" size={16} />
+                  Uploading…
+                </>
+              ) : (
+                <>
+                  <CloudUpload size={16} />
+                  Upload documents
+                </>
+              )}
+            </button>
+          </div>
+        </section>
+        <div className="mt-4 flex items-start gap-2 px-1 text-xs leading-5 text-slate-400">
+          <Info size={14} className="mt-0.5 shrink-0" />
+          Uploaded documents may take a short time to become searchable while
+          they are processed and indexed.
+        </div>
+      </div>
+    </div>
+  );
 }
-function ShieldIcon() { return <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/><path d="m9 12 2 2 4-4"/></svg>; }
-function formatBytes(bytes: number) { if (bytes < 1024) return `${bytes} B`; if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`; return `${(bytes / (1024 * 1024)).toFixed(1)} MB`; }
+function ShieldIcon() {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z" />
+      <path d="m9 12 2 2 4-4" />
+    </svg>
+  );
+}
+function formatBytes(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}

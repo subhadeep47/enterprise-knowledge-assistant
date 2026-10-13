@@ -22,7 +22,9 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     credentials: "include",
     ...init,
     headers: {
-      ...(init?.body instanceof FormData ? {} : { "Content-Type": "application/json" }),
+      ...(init?.body instanceof FormData
+        ? {}
+        : { "Content-Type": "application/json" }),
       ...init?.headers,
     },
   });
@@ -39,23 +41,69 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 const demoSessions: ChatSession[] = [
-  { id: "demo-1", title: "Annual leave policy", updatedAt: new Date().toISOString() },
-  { id: "demo-2", title: "Expense reimbursement", updatedAt: new Date(Date.now() - 86400000).toISOString() },
-  { id: "demo-3", title: "Getting started with VPN", updatedAt: new Date(Date.now() - 172800000).toISOString() },
+  {
+    id: "demo-1",
+    title: "Annual leave policy",
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: "demo-2",
+    title: "Expense reimbursement",
+    updatedAt: new Date(Date.now() - 86400000).toISOString(),
+  },
+  {
+    id: "demo-3",
+    title: "Getting started with VPN",
+    updatedAt: new Date(Date.now() - 172800000).toISOString(),
+  },
 ];
 
 const demoMessages: Record<string, ChatMessage[]> = {
   "demo-1": [
-    { id: "m1", role: "user", content: "How many annual leave days do employees get?", createdAt: new Date().toISOString() },
-    { id: "m2", role: "assistant", content: "Employees receive annual leave according to their employment grade and local policy. Check the current People Handbook for your location; I can help you find the exact section once the knowledge base is connected.", createdAt: new Date().toISOString(), sources: [{ title: "People Handbook", page: 12 }] },
+    {
+      id: "m1",
+      role: "user",
+      content: "How many annual leave days do employees get?",
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: "m2",
+      role: "assistant",
+      content:
+        "Employees receive annual leave according to their employment grade and local policy. Check the current People Handbook for your location; I can help you find the exact section once the knowledge base is connected.",
+      createdAt: new Date().toISOString(),
+      sources: [{ title: "People Handbook", page: 12 }],
+    },
   ],
   "demo-2": [
-    { id: "m3", role: "user", content: "How do I claim an expense?", createdAt: new Date().toISOString() },
-    { id: "m4", role: "assistant", content: "Usually, you submit an expense claim through the company expense portal with the receipt and business purpose attached. Please verify the exact steps in your organisation's expense policy.", createdAt: new Date().toISOString() },
+    {
+      id: "m3",
+      role: "user",
+      content: "How do I claim an expense?",
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: "m4",
+      role: "assistant",
+      content:
+        "Usually, you submit an expense claim through the company expense portal with the receipt and business purpose attached. Please verify the exact steps in your organisation's expense policy.",
+      createdAt: new Date().toISOString(),
+    },
   ],
   "demo-3": [
-    { id: "m5", role: "user", content: "I can't connect to the VPN.", createdAt: new Date().toISOString() },
-    { id: "m6", role: "assistant", content: "Start by confirming your internet connection, then restart the VPN client and sign in with your company account. If the issue continues, contact IT support with the error message.", createdAt: new Date().toISOString() },
+    {
+      id: "m5",
+      role: "user",
+      content: "I can't connect to the VPN.",
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: "m6",
+      role: "assistant",
+      content:
+        "Start by confirming your internet connection, then restart the VPN client and sign in with your company account. If the issue continues, contact IT support with the error message.",
+      createdAt: new Date().toISOString(),
+    },
   ],
 };
 
@@ -75,9 +123,20 @@ export const api = {
 
   loginWithGoogle: (role: UserRole = "EMPLOYEE") => {
     if (DEMO_MODE) {
-      const user: User = role === "ADMIN"
-        ? { id: "demo-admin", name: "Taylor Morgan", email: "taylor.morgan@company.com", role: "ADMIN" }
-        : { id: "demo-employee", name: "Alex Morgan", email: "alex.morgan@company.com", role: "EMPLOYEE" };
+      const user: User =
+        role === "ADMIN"
+          ? {
+              id: "demo-admin",
+              name: "Taylor Morgan",
+              email: "taylor.morgan@company.com",
+              role: "ADMIN",
+            }
+          : {
+              id: "demo-employee",
+              name: "Alex Morgan",
+              email: "alex.morgan@company.com",
+              role: "EMPLOYEE",
+            };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
       window.location.href = role === "ADMIN" ? "/admin" : "/chat";
       return;
@@ -94,24 +153,40 @@ export const api = {
   },
 
   getSessions: async (): Promise<ChatSession[]> => {
-    if (DEMO_MODE) { await delay(); return demoSessions; }
+    if (DEMO_MODE) {
+      await delay();
+      return demoSessions;
+    }
     return request<ChatSession[]>("/api/chat/sessions");
   },
 
   createSession: async (): Promise<ChatSession> => {
     if (DEMO_MODE) {
       await delay(150);
-      return { id: `demo-${Date.now()}`, title: "New conversation", updatedAt: new Date().toISOString() };
+      return {
+        id: `demo-${Date.now()}`,
+        title: "New conversation",
+        updatedAt: new Date().toISOString(),
+      };
     }
-    return request<ChatSession>("/api/chat/sessions", { method: "POST", body: JSON.stringify({}) });
+    return request<ChatSession>("/api/chat/sessions", {
+      method: "POST",
+      body: JSON.stringify({}),
+    });
   },
 
   getMessages: async (sessionId: string): Promise<ChatMessage[]> => {
-    if (DEMO_MODE) { await delay(180); return demoMessages[sessionId] ?? []; }
+    if (DEMO_MODE) {
+      await delay(180);
+      return demoMessages[sessionId] ?? [];
+    }
     return request<ChatMessage[]>(`/api/chat/sessions/${sessionId}/messages`);
   },
 
-  sendMessage: async (sessionId: string, content: string): Promise<ChatMessage> => {
+  sendMessage: async (
+    sessionId: string,
+    content: string,
+  ): Promise<ChatMessage> => {
     if (DEMO_MODE) {
       await delay(900);
       return {
@@ -135,6 +210,9 @@ export const api = {
     }
     const form = new FormData();
     files.forEach((file) => form.append("files", file));
-    return request<{ uploaded: number }>("/api/admin/knowledge-base", { method: "POST", body: form });
+    return request<{ uploaded: number }>("/api/admin/knowledge-base", {
+      method: "POST",
+      body: form,
+    });
   },
 };
