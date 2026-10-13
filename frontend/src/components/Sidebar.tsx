@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Bot, FileUp, LogOut, MessageSquare, Plus, ShieldCheck, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { Bot, FileUp, LogOut, MessageSquare, Plus, ShieldCheck } from "lucide-react";
 import { api } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
 import type { ChatSession } from "../api/types";
@@ -8,76 +8,17 @@ import type { ChatSession } from "../api/types";
 export default function Sidebar() {
   const { user, logout } = useAuth();
   const [sessions, setSessions] = useState<ChatSession[]>([]);
-  const [collapsed, setCollapsed] = useState(false);
   const [sessionError, setSessionError] = useState("");
   const location = useLocation();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!user) return;
-    api.getSessions().then(setSessions).catch(() => setSessionError("Couldn't load history"));
-  }, [user]);
-
-  const newChat = async () => {
-    try {
-      const session = await api.createSession();
-      setSessions((current) => [session, ...current]);
-      navigate(`/chat?session=${session.id}`);
-    } catch {
-      setSessionError("Couldn't start a new chat");
-    }
-  };
-
-  const openSession = (session: ChatSession) => navigate(`/chat?session=${session.id}`);
-
-  return (
-    <aside className={`sidebar ${collapsed ? "sidebar--collapsed" : ""}`}>
-      <div className="sidebar-brand">
-        <div className="brand-mark"><Bot size={19} strokeWidth={2.2} /></div>
-        {!collapsed && <div className="brand-copy"><span>Knowledge</span><small>ASSISTANT</small></div>}
-        <button className="icon-button collapse-button" aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"} onClick={() => setCollapsed(!collapsed)}>
-          {collapsed ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={17} />}
-        </button>
-      </div>
-
-      <div className="sidebar-main">
-        <button className="new-chat-button" onClick={newChat} title="New chat">
-          <Plus size={17} /> {!collapsed && <span>New chat</span>}
-        </button>
-
-        <div className="nav-links">
-          <NavLink to="/chat" className={({ isActive }) => `nav-link ${isActive && !location.search ? "nav-link--active" : ""}`} title="Chat">
-            <MessageSquare size={17} /> {!collapsed && <span>Chat</span>}
-          </NavLink>
-          {user?.role === "ADMIN" && (
-            <NavLink to="/admin" className={({ isActive }) => `nav-link ${isActive ? "nav-link--active" : ""}`} title="Knowledge base">
-              <FileUp size={17} /> {!collapsed && <span>Knowledge base</span>}
-            </NavLink>
-          )}
-        </div>
-
-        {!collapsed && (
-          <div className="history-section">
-            <div className="section-label">RECENT</div>
-            {sessionError && <p className="sidebar-note">{sessionError}</p>}
-            {sessions.map((session) => (
-              <button key={session.id} className={`history-item ${location.search.includes(session.id) ? "history-item--active" : ""}`} onClick={() => openSession(session)} title={session.title}>
-                <MessageSquare size={15} /><span>{session.title}</span>
-              </button>
-            ))}
-            {!sessions.length && !sessionError && <p className="sidebar-note">Your conversations will appear here.</p>}
-          </div>
-        )}
-      </div>
-
-      <div className="sidebar-bottom">
-        {user?.role === "ADMIN" && <div className="role-chip"><ShieldCheck size={14} /> {!collapsed && "Administrator"}</div>}
-        <div className="profile-row">
-          <div className="avatar">{user?.name?.split(" ").map((part) => part[0]).slice(0, 2).join("").toUpperCase() || "U"}</div>
-          {!collapsed && <div className="profile-details"><strong>{user?.name}</strong><span>{user?.email}</span></div>}
-          <button className="icon-button logout-button" onClick={() => void logout()} aria-label="Log out" title="Log out"><LogOut size={17} /></button>
-        </div>
-      </div>
-    </aside>
-  );
+  useEffect(() => { if (user) api.getSessions().then(setSessions).catch(() => setSessionError("Couldn't load history")); }, [user]);
+  const newChat = async () => { try { const session = await api.createSession(); setSessions(current => [session, ...current]); navigate(`/chat?session=${session.id}`); } catch { setSessionError("Couldn't start a new chat"); } };
+  return <aside className="flex w-72 shrink-0 flex-col border-r border-slate-200 bg-slate-50/80 max-md:w-20">
+    <div className="flex h-20 items-center gap-3 border-b border-slate-200 px-5 max-md:justify-center max-md:px-2"><div className="grid h-10 w-10 place-items-center rounded-xl bg-blue-600 text-white shadow-sm"><Bot size={21}/></div><div className="max-md:hidden"><div className="font-semibold tracking-tight text-slate-900">Knowledge</div><div className="text-[10px] font-semibold tracking-[.2em] text-slate-500">ASSISTANT</div></div></div>
+    <div className="flex-1 space-y-6 overflow-y-auto p-4 max-md:px-2"><button onClick={() => void newChat()} className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-3 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"><Plus size={17}/><span className="max-md:hidden">New chat</span></button>
+      <nav className="space-y-1"><NavLink to="/chat" className={({isActive}) => `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${isActive && !location.search ? "bg-blue-50 text-blue-700" : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"}`}><MessageSquare size={17}/><span className="max-md:hidden">Chat</span></NavLink>{user?.role === "ADMIN" && <NavLink to="/admin" className={({isActive}) => `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${isActive ? "bg-blue-50 text-blue-700" : "text-slate-600 hover:bg-slate-100"}`}><FileUp size={17}/><span className="max-md:hidden">Knowledge base</span></NavLink>}</nav>
+      <section className="max-md:hidden"><div className="mb-2 px-2 text-[10px] font-bold tracking-[.18em] text-slate-400">RECENT CONVERSATIONS</div>{sessionError && <p className="px-2 text-xs text-rose-600">{sessionError}</p>}{sessions.map(session => <button key={session.id} onClick={() => navigate(`/chat?session=${session.id}`)} title={session.title} className={`mb-1 flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm ${location.search.includes(session.id) ? "bg-white font-medium text-slate-900 shadow-sm ring-1 ring-slate-200" : "text-slate-600 hover:bg-white hover:text-slate-900"}`}><MessageSquare size={14} className="shrink-0 text-slate-400"/><span className="truncate">{session.title}</span></button>)}{!sessions.length && !sessionError && <p className="px-2 text-xs leading-5 text-slate-400">Your conversations will appear here.</p>}</section>
+    </div>
+    <div className="border-t border-slate-200 p-3"><div className="mb-3 flex items-center gap-2 px-2 text-xs text-slate-500 max-md:hidden"><ShieldCheck size={14}/>{user?.role === "ADMIN" ? "Administrator" : "Employee workspace"}</div><div className="flex items-center gap-2"><div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-700">{user?.name?.split(" ").map(part => part[0]).slice(0,2).join("").toUpperCase() || "U"}</div><div className="min-w-0 flex-1 max-md:hidden"><div className="truncate text-xs font-semibold text-slate-800">{user?.name}</div><div className="truncate text-[11px] text-slate-500">{user?.email}</div></div><button onClick={() => void logout()} title="Log out" aria-label="Log out" className="rounded-lg p-2 text-slate-500 hover:bg-slate-200 hover:text-slate-900"><LogOut size={16}/></button></div></div>
+  </aside>;
 }

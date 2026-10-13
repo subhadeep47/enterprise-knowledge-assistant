@@ -1,17 +1,21 @@
-# Enterprise Knowledge Assistant — Frontend
+# Enterprise Knowledge & Support Assistant — Frontend
 
-A minimal React + TypeScript + Vite frontend with:
-- Google-only login entry point
-- Protected application layout
-- Employee chat screen with conversation history
-- Admin knowledge-base upload screen
-- Logout
-- Responsive sidebar and clean minimal styling
+Minimal React + TypeScript frontend for an enterprise knowledge assistant. Styling uses **Tailwind CSS v4 through the Vite plugin** (no hand-authored component stylesheet).
+
+## Features
+
+- Google sign-in entry point; backend owns the OAuth2 flow when demo mode is disabled.
+- Protected application routes for `/chat` and `/admin`.
+- Employee chat UI with recent sessions, suggested prompts, message history, and source references.
+- Admin knowledge-base document upload UI (PDF, DOC/DOCX, TXT, MD).
+- Logout action and `credentials: "include"` on API requests for cookie-based BFF authentication.
+- Demo mode for previewing the frontend without a backend. The demo role selector is shown only in demo mode.
+- Vite TypeScript environment types included in `src/vite-env.d.ts` to resolve `Property 'env' does not exist on type 'ImportMeta'`.
 
 ## Requirements
-- Node.js 20+
-- npm
-- Spring Boot backend for real authentication and API calls
+
+- Node.js 20.19+ or 22.12+ recommended for Vite 6.
+- npm.
 
 ## Run locally
 
@@ -23,59 +27,48 @@ npm run dev
 
 Open http://localhost:5173.
 
-The project defaults to `VITE_DEMO_MODE=true` so you can explore the UI before the backend is ready. Demo mode uses mock sessions and a mock admin/employee identity. **Do not enable demo mode in production.**
+## Connect the Spring Boot backend
 
-To connect the backend:
-1. Set `VITE_DEMO_MODE=false`.
-2. Set `VITE_API_BASE_URL` if your backend is on a separate origin, or configure the Vite proxy in `vite.config.ts`.
-3. Ensure Spring Security exposes `GET /api/auth/me`, `POST /api/auth/logout`, `GET /api/chat/sessions`, `GET /api/chat/sessions/:id/messages`, `POST /api/chat/sessions`, `POST /api/chat/sessions/:id/messages`, and `POST /api/admin/knowledge-base`.
-4. Configure Spring OAuth2 login at `/oauth2/authorization/google`.
-5. Use a secure HttpOnly session cookie (recommended) and configure CORS/CSRF appropriately for your deployment.
+Set the following in `.env`:
 
-### Demo role switching
-In demo mode, the login screen includes a small role selector for previewing employee/admin layouts. This selector is intentionally hidden when demo mode is disabled. In a real system, the role must come from the authenticated backend identity; never trust a role supplied by the browser.
+```dotenv
+VITE_API_BASE_URL=http://localhost:8080
+VITE_DEMO_MODE=false
+VITE_GOOGLE_LOGIN_PATH=/oauth2/authorization/google
+```
 
-## Suggested API contract
+The frontend currently expects these backend routes:
 
-`GET /api/auth/me`
+| Method | Route | Purpose |
+| --- | --- | --- |
+| `GET` | `/api/auth/me` | Current authenticated user |
+| `POST` | `/api/auth/logout` | Clear the server-side session/cookie |
+| `GET` | `/api/chat/sessions` | List chat sessions |
+| `POST` | `/api/chat/sessions` | Create a chat session |
+| `GET` | `/api/chat/sessions/{sessionId}/messages` | Read a session's messages |
+| `POST` | `/api/chat/sessions/{sessionId}/messages` | Send a message |
+| `POST` | `/api/admin/knowledge-base` | Upload knowledge documents as multipart field `files` |
+
+Expected current-user shape:
+
 ```json
-{ "id": "u-123", "name": "Alex Morgan", "email": "alex@company.com", "role": "EMPLOYEE" }
+{
+  "id": "user-id",
+  "name": "Alex Morgan",
+  "email": "alex@company.com",
+  "role": "EMPLOYEE"
+}
 ```
 
-`GET /api/chat/sessions`
-```json
-[{ "id": "s-1", "title": "Expense policy", "updatedAt": "2026-10-12T09:00:00Z" }]
+`role` should be `EMPLOYEE` or `ADMIN`. The frontend sends requests with `credentials: "include"`, so the BFF should issue the application JWT in an HttpOnly cookie. Configure backend CORS to allow the Vite origin with credentials, or serve/proxy the frontend and backend through one origin. Do not expose tokens to browser JavaScript.
+
+## Production build
+
+```bash
+npm run build
+npm run preview
 ```
 
-`GET /api/chat/sessions/:id/messages`
-```json
-[{ "id": "m-1", "role": "assistant", "content": "Here is the policy summary.", "createdAt": "2026-10-12T09:00:00Z" }]
-```
+## Important scope note
 
-`POST /api/chat/sessions/:id/messages`
-```json
-{ "content": "How do I submit expenses?" }
-```
-Expected response:
-```json
-{ "id": "m-2", "role": "assistant", "content": "You can submit expenses from ...", "createdAt": "2026-10-12T09:01:00Z", "sources": [{ "title": "Expense Policy.pdf", "page": 4 }] }
-```
-
-`POST /api/admin/knowledge-base` should accept `multipart/form-data` with one or more files in a `files` field. Adjust the client if your backend contract differs.
-
-## Project structure
-
-```text
-src/
-  api/              API client and types
-  auth/              Auth context and protected route
-  components/        Shared app layout and sidebar
-  pages/             Login, chat, admin upload pages
-  styles/            Global CSS
-```
-
-## Notes
-- API routes are centralized in `src/api/client.ts`.
-- Chat requests use a simple loading state and display source references when returned.
-- Upload progress is represented with a busy state; production progress can be added once the backend supports it.
-- Frontend route protection improves UX but is not a security boundary. Enforce roles and access on the backend too.
+This is a frontend scaffold. Demo mode uses mock data and browser local storage for preview convenience; it is not production authentication. In backend mode, Google OAuth, JWT validation, role assignment, cookie flags, CSRF strategy, and document ingestion must be implemented and secured by Spring Boot.
