@@ -2,6 +2,7 @@
 package com.enterprise.assistant.backend.auth;
 
 
+import com.enterprise.assistant.backend.auth.service.AuthCookieService;
 import com.enterprise.assistant.backend.auth.service.JwtService;
 import com.enterprise.assistant.backend.user.model.UserEntity;
 import com.enterprise.assistant.backend.user.service.UserService;

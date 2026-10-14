@@ -1,7 +1,7 @@
 
 package com.enterprise.assistant.backend.filter;
 
-import com.enterprise.assistant.backend.auth.AuthCookieService;
+import com.enterprise.assistant.backend.auth.service.AuthCookieService;
 
 import com.enterprise.assistant.backend.auth.service.JwtService;
 import io.jsonwebtoken.Claims;

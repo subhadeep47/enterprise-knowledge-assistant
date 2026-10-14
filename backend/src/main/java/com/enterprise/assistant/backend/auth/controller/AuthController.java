@@ -1,7 +1,7 @@
 
 package com.enterprise.assistant.backend.auth.controller;
 
-import com.enterprise.assistant.backend.auth.AuthCookieService;
+import com.enterprise.assistant.backend.auth.service.AuthCookieService;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.http.ResponseEntity;
