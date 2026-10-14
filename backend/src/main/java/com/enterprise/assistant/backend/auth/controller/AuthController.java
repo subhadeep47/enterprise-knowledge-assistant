@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,7 +31,15 @@ public class AuthController {
     public Map<String, String> getCurrentUser(
             Authentication authentication) {
 
-        return Map.of("email", authentication.getName());
+        String role = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Role must be present for all users"));
+
+        return Map.of(
+                "email", authentication.getName(),
+                "role", role
+        );
     }
 
     @PostMapping("/logout")

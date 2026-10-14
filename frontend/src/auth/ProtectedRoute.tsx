@@ -20,6 +20,6 @@ export function ProtectedRoute({
     );
   if (!user) return <Navigate to="/login" state={{ from: location }} replace />;
   if (allowedRoles && !allowedRoles.includes(user.role))
-    return <Navigate to={user.role === "ADMIN" ? "/admin" : "/chat"} replace />;
+    return <Navigate to={user.role === "ROLE_ADMIN" ? "/admin" : "/chat"} replace />;
   return children;
 }

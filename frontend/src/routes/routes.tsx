@@ -21,7 +21,7 @@ export default function AppRoutes() {
         path="/login"
         element={
           user ? (
-            <Navigate to={user.role === "ADMIN" ? "/admin" : "/chat"} replace />
+            <Navigate to={user.role === "ROLE_ADMIN" ? "/admin" : "/chat"} replace />
           ) : (
             <LoginPage />
           )
@@ -37,7 +37,7 @@ export default function AppRoutes() {
         <Route
           path="/chat"
           element={
-            <ProtectedRoute allowedRoles={["EMPLOYEE", "ADMIN"]}>
+            <ProtectedRoute allowedRoles={["ROLE_EMPLOYEE", "ROLE_ADMIN"]}>
               <ChatPage />
             </ProtectedRoute>
           }
@@ -45,7 +45,7 @@ export default function AppRoutes() {
         <Route
           path="/admin"
           element={
-            <ProtectedRoute allowedRoles={["ADMIN"]}>
+            <ProtectedRoute allowedRoles={["ROLE_ADMIN"]}>
               <AdminPage />
             </ProtectedRoute>
           }
@@ -55,7 +55,7 @@ export default function AppRoutes() {
         path="*"
         element={
           <Navigate
-            to={user ? (user.role === "ADMIN" ? "/admin" : "/chat") : "/login"}
+            to={user ? (user.role === "ROLE_ADMIN" ? "/admin" : "/chat") : "/login"}
             replace
           />
         }
