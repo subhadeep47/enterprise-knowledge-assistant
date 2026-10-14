@@ -7,6 +7,7 @@ import {
   Info,
   LoaderCircle,
   Trash2,
+  ShieldCheck,
 } from "lucide-react";
 import { api } from "../api/client";
 export default function AdminPage() {
@@ -57,48 +58,72 @@ export default function AdminPage() {
     }
   };
   return (
-    <div className="min-h-screen bg-slate-50/60">
-      <header className="flex h-20 items-center justify-between border-b border-slate-200 bg-white px-6 sm:px-10">
+    <div className="min-h-screen bg-[#F4F0EA] text-[#171614]">
+      <header className="flex min-h-[76px] items-center justify-between border-b border-[#D6CEC3] px-5 sm:px-8">
         <div>
-          <div className="text-[10px] font-bold tracking-[.2em] text-blue-600">
-            ADMINISTRATION
-          </div>
-          <h2 className="mt-1 text-base font-semibold text-slate-900">
-            Knowledge base
-          </h2>
+          <p className="mono-label text-[9px] text-[#C85A32]">Workspace / 02</p>
+          <h2 className="mt-1 text-sm font-semibold">Knowledge base</h2>
         </div>
-        <div className="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-700">
-          <ShieldIcon />
-          <span>Admin tools</span>
+        <div className="flex items-center gap-2 border border-[#D6CEC3] px-3 py-2 text-[10px] text-[#706B64]">
+          <ShieldCheck size={14} className="text-[#C85A32]" />
+          <span className="mono-label text-[9px]">Admin tools</span>
         </div>
       </header>
-      <div className="mx-auto max-w-4xl px-5 py-10 sm:px-8 sm:py-14">
-        <div className="mb-8 flex items-start gap-4">
-          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-blue-50 text-blue-600">
-            <FileUp size={22} />
-          </div>
+      <div className="mx-auto grid max-w-[1240px] grid-cols-1 gap-10 px-5 py-8 sm:px-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(360px,.9fr)] lg:gap-14 lg:px-12 lg:py-14">
+        <section className="flex flex-col justify-between">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-slate-950">
-              Manage your knowledge
+            <p className="mono-label mb-5 flex items-center gap-3 text-[10px] text-[#C85A32]">
+              <span className="h-px w-8 bg-[#C85A32]" />
+              Content operations
+            </p>
+            <h1 className="display-font text-[clamp(3.5rem,7vw,6.4rem)] leading-[.87] tracking-[-.04em]">
+              Put your
+              <br />
+              knowledge
+              <br />
+              <em className="text-[#C85A32]">to work.</em>
             </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
-              Upload trusted documents so the assistant can answer employee
-              questions with relevant information.
+            <p className="mt-7 max-w-md text-sm leading-6 text-[#706B64] sm:text-base">
+              Add approved internal documents to give the assistant a reliable
+              foundation for employee questions.
             </p>
           </div>
-        </div>
-        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 px-6 py-5">
-            <div>
-              <h3 className="font-semibold text-slate-900">Add documents</h3>
-              <p className="mt-1 text-sm text-slate-500">
-                Choose files from your computer or drag them into the area
-                below.
+          <div className="mt-12 grid max-w-lg grid-cols-2 border-y border-[#D6CEC3] py-5">
+            <div className="pr-5">
+              <p className="mono-label text-[9px] text-[#706B64]">
+                Accepted formats
+              </p>
+              <p className="mt-3 text-sm font-semibold">
+                PDF · DOCX · TXT · MD
               </p>
             </div>
-            <span className="rounded-full bg-slate-100 px-2.5 py-1.5 text-[10px] font-bold tracking-wider text-slate-500">
-              DOCUMENT INGESTION
-            </span>
+            <div className="border-l border-[#D6CEC3] pl-5">
+              <p className="mono-label text-[9px] text-[#706B64]">
+                Recommended
+              </p>
+              <p className="mt-3 text-sm font-semibold">
+                Current, approved docs
+              </p>
+            </div>
+          </div>
+          <p className="mt-6 flex items-start gap-2 text-xs leading-5 text-[#8A8177]">
+            <Info size={14} className="mt-0.5 shrink-0 text-[#C85A32]" />
+            Upload only approved, work-related documents. Access controls should
+            also be enforced by the backend.
+          </p>
+        </section>
+        <section className="self-start border border-[#171614] bg-[#F8F5F0]">
+          <div className="flex items-start justify-between gap-3 border-b border-[#D6CEC3] p-5 sm:p-6">
+            <div>
+              <p className="mono-label text-[9px] text-[#C85A32]">
+                Ingestion / 01
+              </p>
+              <h3 className="display-font mt-2 text-3xl">Add documents</h3>
+              <p className="mt-2 max-w-sm text-xs leading-5 text-[#706B64]">
+                Select one or more files, or drop them in the marked area.
+              </p>
+            </div>
+            <FileUp size={20} className="mt-1 text-[#C85A32]" />
           </div>
           <div
             onDragOver={(event) => {
@@ -107,28 +132,28 @@ export default function AdminPage() {
             }}
             onDragLeave={() => setDragging(false)}
             onDrop={onDrop}
-            className={`mx-5 mt-5 flex min-h-64 flex-col items-center justify-center rounded-xl border-2 border-dashed px-5 py-9 text-center transition sm:mx-6 ${dragging ? "border-blue-500 bg-blue-50" : "border-slate-200 bg-slate-50/70 hover:border-slate-300"}`}
+            className={`mx-5 mt-5 flex min-h-56 flex-col items-start justify-between border border-dashed p-5 transition sm:mx-6 sm:p-6 ${dragging ? "border-[#C85A32] bg-[#F7E3D9]" : "border-[#B9AFA3] bg-[#F4F0EA] hover:border-[#C85A32]"}`}
           >
-            <div className="grid h-12 w-12 place-items-center rounded-2xl bg-white text-blue-600 shadow-sm ring-1 ring-slate-200">
-              <CloudUpload size={24} />
+            <div className="flex h-10 w-10 items-center justify-center bg-[#C85A32] text-[#F4F0EA]">
+              <CloudUpload size={20} />
             </div>
-            <h3 className="mt-4 font-semibold text-slate-900">
-              Drop your files here
-            </h3>
-            <p className="mt-1 text-sm text-slate-500">
-              or{" "}
-              <button
-                className="font-semibold text-blue-600 hover:text-blue-700"
-                onClick={() => fileRef.current?.click()}
-                type="button"
-              >
-                browse files
-              </button>{" "}
-              from your device
-            </p>
-            <span className="mt-3 text-xs text-slate-400">
-              PDF, DOCX, TXT, MD · Multiple files supported
-            </span>
+            <div className="mt-8">
+              <h4 className="text-sm font-semibold">Drop your files here.</h4>
+              <p className="mt-1 text-xs text-[#706B64]">
+                or{" "}
+                <button
+                  className="font-semibold text-[#C85A32] underline underline-offset-4 hover:text-[#A94321]"
+                  onClick={() => fileRef.current?.click()}
+                  type="button"
+                >
+                  browse files
+                </button>{" "}
+                from your device
+              </p>
+              <p className="mono-label mt-4 text-[8px] text-[#8A8177]">
+                PDF / DOCX / TXT / MD · Multiple files
+              </p>
+            </div>
             <input
               ref={fileRef}
               type="file"
@@ -141,27 +166,27 @@ export default function AdminPage() {
           {files.length > 0 && (
             <div className="px-5 pt-5 sm:px-6">
               <div className="mb-2 flex items-center justify-between">
-                <h4 className="text-sm font-semibold text-slate-800">
+                <h4 className="mono-label text-[9px] text-[#706B64]">
                   Selected files
                 </h4>
-                <span className="text-xs text-slate-500">
+                <span className="text-xs text-[#706B64]">
                   {files.length} item{files.length === 1 ? "" : "s"}
                 </span>
               </div>
-              <div className="divide-y divide-slate-100 rounded-xl border border-slate-200">
+              <div className="divide-y divide-[#D6CEC3] border border-[#D6CEC3]">
                 {files.map((file, index) => (
                   <div
                     key={`${file.name}-${file.size}-${index}`}
                     className="flex items-center gap-3 px-3 py-3"
                   >
-                    <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-blue-50 text-blue-600">
-                      <FileText size={17} />
+                    <div className="grid h-8 w-8 shrink-0 place-items-center border border-[#D6CEC3] text-[#C85A32]">
+                      <FileText size={15} />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="truncate text-sm font-medium text-slate-800">
+                      <div className="truncate text-xs font-semibold">
                         {file.name}
                       </div>
-                      <div className="mt-0.5 text-xs text-slate-400">
+                      <div className="mt-1 text-[10px] text-[#8A8177]">
                         {formatBytes(file.size)}
                       </div>
                     </div>
@@ -172,9 +197,9 @@ export default function AdminPage() {
                         )
                       }
                       aria-label={`Remove ${file.name}`}
-                      className="rounded-lg p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600"
+                      className="p-2 text-[#706B64] hover:bg-[#F7E3D9] hover:text-[#A94321]"
                     >
-                      <Trash2 size={16} />
+                      <Trash2 size={15} />
                     </button>
                   </div>
                 ))}
@@ -182,65 +207,41 @@ export default function AdminPage() {
             </div>
           )}
           {error && (
-            <div className="mx-5 mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 sm:mx-6">
+            <div className="mx-5 mt-4 border border-[#C85A32] bg-[#F7E3D9] px-4 py-3 text-xs text-[#8B3518] sm:mx-6">
               {error}
             </div>
           )}
           {success && (
-            <div className="mx-5 mt-4 flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 sm:mx-6">
-              <CheckCircle2 size={17} className="mt-0.5 shrink-0" />
+            <div className="mx-5 mt-4 flex items-start gap-2 border border-[#8B9A76] bg-[#E8EBDD] px-4 py-3 text-xs text-[#34452B] sm:mx-6">
+              <CheckCircle2 size={16} className="mt-0.5 shrink-0" />
               {success}
             </div>
           )}
-          <div className="mt-5 flex flex-col gap-4 border-t border-slate-100 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-            <div className="flex items-start gap-2 text-xs leading-5 text-slate-500">
-              <Info size={15} className="mt-0.5 shrink-0" />
-              Only upload approved, work-related documents.
-            </div>
+          <div className="mt-5 flex flex-col gap-4 border-t border-[#D6CEC3] px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+            <p className="text-[10px] leading-5 text-[#8A8177]">
+              Files may take a short time to process and index.
+            </p>
             <button
               onClick={() => void upload()}
               disabled={!files.length || uploading}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+              className="inline-flex items-center justify-center gap-2 bg-[#C85A32] px-4 py-3 text-xs font-semibold text-[#F4F0EA] transition hover:bg-[#A94321]"
             >
               {uploading ? (
                 <>
-                  <LoaderCircle className="animate-spin" size={16} />
+                  <LoaderCircle className="animate-spin" size={15} />
                   Uploading…
                 </>
               ) : (
                 <>
-                  <CloudUpload size={16} />
+                  <CloudUpload size={15} />
                   Upload documents
                 </>
               )}
             </button>
           </div>
         </section>
-        <div className="mt-4 flex items-start gap-2 px-1 text-xs leading-5 text-slate-400">
-          <Info size={14} className="mt-0.5 shrink-0" />
-          Uploaded documents may take a short time to become searchable while
-          they are processed and indexed.
-        </div>
       </div>
     </div>
-  );
-}
-function ShieldIcon() {
-  return (
-    <svg
-      width="15"
-      height="15"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z" />
-      <path d="m9 12 2 2 4-4" />
-    </svg>
   );
 }
 function formatBytes(bytes: number) {

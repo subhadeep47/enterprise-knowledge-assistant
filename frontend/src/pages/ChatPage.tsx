@@ -1,24 +1,34 @@
 import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { ArrowUp, BookOpen, Bot, FileText, Sparkles } from "lucide-react";
+import {
+  ArrowUpRight,
+  BookOpen,
+  Bot,
+  FileText,
+  LockKeyhole,
+  Search,
+} from "lucide-react";
 import { api } from "../api/client";
 import type { ChatMessage } from "../api/types";
 
 const suggestions = [
   {
+    number: "01",
     title: "Company policies",
     prompt: "Where can I find the latest company policies?",
-    icon: FileText,
+    note: "Guidelines, leave and workplace standards",
   },
   {
+    number: "02",
     title: "IT support",
     prompt: "What should I do if I can't connect to the company VPN?",
-    icon: Bot,
+    note: "Troubleshooting and access requests",
   },
   {
+    number: "03",
     title: "People & benefits",
     prompt: "Summarise the employee benefits available to me.",
-    icon: BookOpen,
+    note: "Benefits, onboarding and people ops",
   },
 ];
 export default function ChatPage() {
@@ -56,7 +66,9 @@ export default function ChatPage() {
     const clean = content.trim();
     if (!clean || loading) return;
     if (!sessionId) {
-      setError("Start a new chat from the sidebar before sending a message.");
+      setError(
+        "Start a new conversation from the sidebar before sending a message.",
+      );
       return;
     }
     const userMessage: ChatMessage = {
@@ -90,107 +102,162 @@ export default function ChatPage() {
     }
   };
   return (
-    <div className="flex h-screen min-h-[560px] flex-col bg-white">
-      <header className="flex h-20 shrink-0 items-center justify-between border-b border-slate-200 px-6 sm:px-10">
+    <div className="flex h-screen min-h-[560px] flex-col bg-[#F4F0EA]">
+      <header className="flex min-h-[76px] shrink-0 items-center justify-between border-b border-[#D6CEC3] px-5 sm:px-8">
         <div>
-          <div className="text-[10px] font-bold tracking-[.2em] text-blue-600">
-            WORKSPACE
-          </div>
-          <h2 className="mt-1 text-base font-semibold text-slate-900">
-            Knowledge assistant
-          </h2>
+          <p className="mono-label text-[9px] text-[#C85A32]">Workspace / 01</p>
+          <h2 className="mt-1 text-sm font-semibold">Knowledge assistant</h2>
         </div>
-        <div className="hidden items-center gap-2 rounded-full border border-slate-200 px-3 py-2 text-xs font-medium text-slate-600 sm:flex">
-          <span className="h-2 w-2 rounded-full bg-emerald-500" /> Internal
-          knowledge
+        <div className="flex items-center gap-2 text-[10px] text-[#706B64]">
+          <span className="h-2 w-2 bg-[#C85A32]" /> INTERNAL KNOWLEDGE
         </div>
       </header>
-      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 sm:px-8">
+      <div className="min-h-0 flex-1 overflow-y-auto">
         {messages.length === 0 ? (
-          <div className="m-auto w-full max-w-3xl py-12">
-            <div className="mx-auto mb-5 grid h-14 w-14 place-items-center rounded-2xl bg-blue-50 text-blue-600 ring-1 ring-blue-100">
-              <Sparkles size={25} />
-            </div>
-            <div className="text-center">
-              <div className="text-[10px] font-bold tracking-[.22em] text-blue-600">
-                YOUR AI WORKMATE
-              </div>
-              <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
-                What can I help you figure out?
-              </h1>
-              <p className="mx-auto mt-3 max-w-lg text-sm leading-6 text-slate-500">
-                Ask a question about company policies, processes, or internal
-                documentation.
+          <div className="mx-auto grid min-h-full max-w-[1240px] grid-cols-1 gap-8 px-5 py-8 sm:px-8 lg:grid-cols-[minmax(0,1.65fr)_minmax(220px,.7fr)] lg:gap-12 lg:px-12 lg:py-12">
+            <section className="flex flex-col justify-center">
+              <p className="mono-label mb-5 flex items-center gap-3 text-[10px] text-[#C85A32]">
+                <span className="h-px w-8 bg-[#C85A32]" />
+                Ask the knowledge base
               </p>
-            </div>
-            <div className="mt-9 grid gap-3 md:grid-cols-3">
-              {suggestions.map((item) => (
-                <button
-                  key={item.title}
-                  onClick={() => {
-                    setInput(item.prompt);
-                    inputRef.current?.focus();
-                  }}
-                  className="group rounded-2xl border border-slate-200 p-4 text-left transition hover:border-blue-300 hover:bg-blue-50/40"
-                >
-                  <item.icon size={18} className="text-blue-600" />
-                  <div className="mt-4 text-sm font-semibold text-slate-800">
-                    {item.title}
+              <h1 className="display-font max-w-3xl text-[clamp(3.5rem,7vw,6.5rem)] leading-[.88] tracking-[-.035em]">
+                What do you
+                <br />
+                need to <em className="text-[#C85A32]">know?</em>
+              </h1>
+              <p className="mt-6 max-w-lg text-sm leading-6 text-[#706B64] sm:text-base">
+                Search company knowledge in plain language. Get a useful answer,
+                with the documents behind it.
+              </p>
+              <div className="mt-10 grid grid-cols-1 border-t border-[#D6CEC3] sm:grid-cols-3">
+                {suggestions.map((item) => (
+                  <button
+                    key={item.number}
+                    onClick={() => {
+                      setInput(item.prompt);
+                      inputRef.current?.focus();
+                    }}
+                    className="group border-b border-[#D6CEC3] py-4 text-left transition hover:bg-[#EEE8E0] sm:border-b-0 sm:border-r sm:px-4 sm:first:pl-0 sm:last:border-r-0"
+                  >
+                    <span className="mono-label text-[9px] text-[#C85A32]">
+                      {item.number} / Prompt
+                    </span>
+                    <div className="mt-3 flex items-center justify-between gap-2 text-sm font-semibold">
+                      {item.title}
+                      <ArrowUpRight
+                        size={15}
+                        className="shrink-0 text-[#C85A32] transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                      />
+                    </div>
+                    <p className="mt-2 text-xs leading-5 text-[#706B64]">
+                      {item.note}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            </section>
+            <aside className="flex flex-col justify-between border-t border-[#171614] pt-5 lg:mt-6 lg:border-l lg:border-t-0 lg:pl-7 lg:pt-0">
+              <div>
+                <p className="mono-label text-[9px] text-[#706B64]">
+                  A better way to find it
+                </p>
+                <div className="mt-6 space-y-6">
+                  <div className="flex gap-3">
+                    <Search
+                      size={17}
+                      className="mt-0.5 shrink-0 text-[#C85A32]"
+                    />
+                    <div>
+                      <p className="text-sm font-semibold">Ask naturally</p>
+                      <p className="mt-1 text-xs leading-5 text-[#706B64]">
+                        No keywords or folder hunting required.
+                      </p>
+                    </div>
                   </div>
-                  <p className="mt-1 text-xs leading-5 text-slate-500">
-                    {item.prompt}
-                  </p>
-                  <div className="mt-3 text-xs font-semibold text-blue-600 opacity-0 transition group-hover:opacity-100">
-                    Ask this question →
+                  <div className="flex gap-3">
+                    <BookOpen
+                      size={17}
+                      className="mt-0.5 shrink-0 text-[#C85A32]"
+                    />
+                    <div>
+                      <p className="text-sm font-semibold">See the source</p>
+                      <p className="mt-1 text-xs leading-5 text-[#706B64]">
+                        Answers can include references to internal documents.
+                      </p>
+                    </div>
                   </div>
-                </button>
-              ))}
-            </div>
+                  <div className="flex gap-3">
+                    <LockKeyhole
+                      size={17}
+                      className="mt-0.5 shrink-0 text-[#C85A32]"
+                    />
+                    <div>
+                      <p className="text-sm font-semibold">
+                        Stay in your workspace
+                      </p>
+                      <p className="mt-1 text-xs leading-5 text-[#706B64]">
+                        Use approved company knowledge, not guesswork.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-8 border-t border-[#D6CEC3] pt-4">
+                <p className="display-font text-2xl italic">
+                  Less searching.
+                  <br />
+                  <span className="text-[#C85A32]">More doing.</span>
+                </p>
+                <p className="mono-label mt-4 text-[8px] text-[#8A8177]">
+                  FIELDNOTES / INTERNAL AI
+                </p>
+              </div>
+            </aside>
           </div>
         ) : (
-          <div className="mx-auto w-full max-w-3xl space-y-7 py-8">
+          <div className="mx-auto max-w-3xl space-y-7 px-5 py-8 sm:px-8">
             {messages.map((message) => (
               <article
                 key={message.id}
                 className={`flex gap-3 ${message.role === "user" ? "flex-row-reverse" : ""}`}
               >
                 <div
-                  className={`grid h-8 w-8 shrink-0 place-items-center rounded-full ${message.role === "assistant" ? "bg-blue-600 text-white" : "bg-slate-200 text-slate-700"}`}
+                  className={`grid h-8 w-8 shrink-0 place-items-center ${message.role === "assistant" ? "bg-[#C85A32] text-[#F4F0EA]" : "border border-[#D6CEC3] bg-[#E9E2D8] text-[#171614]"}`}
                 >
                   {message.role === "assistant" ? (
-                    <Bot size={16} />
+                    <Bot size={15} />
                   ) : (
-                    <span className="text-xs font-bold">Y</span>
+                    <span className="mono-label text-[9px]">You</span>
                   )}
                 </div>
                 <div
                   className={`min-w-0 max-w-[85%] ${message.role === "user" ? "text-right" : ""}`}
                 >
-                  <div className="mb-1 text-xs font-semibold text-slate-500">
+                  <div className="mono-label mb-2 text-[9px] text-[#706B64]">
                     {message.role === "assistant"
-                      ? "Knowledge Assistant"
+                      ? "Knowledge assistant"
                       : "You"}
                   </div>
                   <div
-                    className={`whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm leading-6 ${message.role === "assistant" ? "bg-slate-50 text-slate-800 ring-1 ring-slate-100" : "bg-blue-600 text-white"}`}
+                    className={`whitespace-pre-wrap border px-4 py-3 text-sm leading-6 ${message.role === "assistant" ? "border-[#D6CEC3] bg-[#EEE8E0] text-[#171614]" : "border-[#171614] bg-[#171614] text-[#F4F0EA]"}`}
                   >
                     {message.content}
                   </div>
                   {!!message.sources?.length && (
-                    <div className="mt-3 rounded-xl border border-slate-200 p-3">
-                      <div className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold text-slate-500">
+                    <div className="mt-3 border border-[#D6CEC3] p-3">
+                      <div className="mb-2 flex items-center gap-1.5 mono-label text-[9px] text-[#706B64]">
                         <BookOpen size={13} /> Sources
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {message.sources.map((source, index) => (
                           <span
                             key={`${source.title}-${index}`}
-                            className="inline-flex items-center gap-1.5 rounded-lg bg-white px-2.5 py-1.5 text-xs text-slate-600 ring-1 ring-slate-200"
+                            className="inline-flex items-center gap-1.5 border border-[#D6CEC3] bg-[#F4F0EA] px-2.5 py-1.5 text-xs text-[#706B64]"
                           >
                             <FileText size={13} />
                             {source.title}
                             {source.page && (
-                              <span className="text-slate-400">
+                              <span className="text-[#C85A32]">
                                 p. {source.page}
                               </span>
                             )}
@@ -204,11 +271,11 @@ export default function ChatPage() {
             ))}
             {loading && (
               <div className="flex gap-3">
-                <div className="grid h-8 w-8 place-items-center rounded-full bg-blue-600 text-white">
-                  <Bot size={16} />
+                <div className="grid h-8 w-8 place-items-center bg-[#C85A32] text-[#F4F0EA]">
+                  <Bot size={15} />
                 </div>
-                <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-500">
-                  Thinking…
+                <div className="border border-[#D6CEC3] bg-[#EEE8E0] px-4 py-3 text-sm text-[#706B64]">
+                  Working on an answer…
                 </div>
               </div>
             )}
@@ -216,38 +283,38 @@ export default function ChatPage() {
           </div>
         )}
         {error && (
-          <div className="mx-auto mb-3 w-full max-w-3xl rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+          <div className="mx-auto mb-3 w-[calc(100%-2rem)] max-w-3xl border border-[#C85A32] bg-[#F7E3D9] px-4 py-3 text-sm text-[#8B3518]">
             {error}
           </div>
         )}
       </div>
-      <div className="shrink-0 border-t border-slate-100 bg-white px-4 pb-4 pt-3 sm:px-8">
+      <div className="shrink-0 border-t border-[#D6CEC3] bg-[#F4F0EA] px-4 pb-4 pt-3 sm:px-8">
         <form
           onSubmit={submit}
-          className="mx-auto flex max-w-3xl items-end gap-3 rounded-2xl border border-slate-200 bg-white p-2 pl-4 shadow-sm transition focus-within:border-blue-300 focus-within:ring-4 focus-within:ring-blue-50"
+          className="mx-auto flex max-w-3xl items-end gap-3 border border-[#171614] bg-[#F9F6F1] p-2 pl-4 transition focus-within:ring-2 focus-within:ring-[#C85A32]/25"
         >
           <textarea
             ref={inputRef}
             value={input}
             onChange={(event) => setInput(event.target.value)}
             onKeyDown={onKeyDown}
-            placeholder="Ask anything about your workplace…"
+            placeholder="Ask a question about your workplace…"
             rows={1}
             aria-label="Message the knowledge assistant"
-            className="max-h-36 min-h-10 flex-1 resize-y bg-transparent py-2 text-sm leading-6 text-slate-800 outline-none placeholder:text-slate-400"
+            className="max-h-36 min-h-10 flex-1 resize-y bg-transparent py-2 text-sm leading-6 text-[#171614] outline-none placeholder:text-[#8A8177]"
           />
           <button
             type="submit"
             disabled={!input.trim() || loading}
             aria-label="Send message"
-            className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-blue-600 text-white transition hover:bg-blue-700"
+            className="grid h-10 w-10 shrink-0 place-items-center bg-[#C85A32] text-[#F4F0EA] transition hover:bg-[#A94321]"
           >
-            <ArrowUp size={19} />
+            <ArrowUpRight size={19} />
           </button>
         </form>
-        <p className="mt-3 text-center text-[10px] text-slate-400">
-          AI can make mistakes. Verify important information with the linked
-          source documents.
+        <p className="mono-label mt-3 text-center text-[8px] text-[#8A8177]">
+          AI can make mistakes · Verify important information with source
+          documents
         </p>
       </div>
     </div>

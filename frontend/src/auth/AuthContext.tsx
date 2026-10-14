@@ -1,11 +1,4 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { api } from "../api/client";
 import type { User, UserRole } from "../api/types";
@@ -37,24 +30,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     void refreshUser();
     const handleUnauthorized = () => setUser(null);
     window.addEventListener("eka:unauthorized", handleUnauthorized);
-    return () =>
-      window.removeEventListener("eka:unauthorized", handleUnauthorized);
+    return () => window.removeEventListener("eka:unauthorized", handleUnauthorized);
   }, [refreshUser]);
 
   const login = useCallback((role?: UserRole) => api.loginWithGoogle(role), []);
   const logout = useCallback(async () => {
-    try {
-      await api.logout();
-    } finally {
-      setUser(null);
-      window.location.href = "/login";
-    }
+    try { await api.logout(); } finally { setUser(null); window.location.href = "/login"; }
   }, []);
 
-  const value = useMemo(
-    () => ({ user, loading, login, logout, refreshUser }),
-    [user, loading, login, logout, refreshUser],
-  );
+  const value = useMemo(() => ({ user, loading, login, logout, refreshUser }), [user, loading, login, logout, refreshUser]);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
