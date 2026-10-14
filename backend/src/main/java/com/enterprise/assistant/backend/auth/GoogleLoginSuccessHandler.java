@@ -4,6 +4,7 @@ package com.enterprise.assistant.backend.auth;
 
 import com.enterprise.assistant.backend.auth.service.AuthCookieService;
 import com.enterprise.assistant.backend.auth.service.JwtService;
+import com.enterprise.assistant.backend.user.enums.UserRole;
 import com.enterprise.assistant.backend.user.model.UserEntity;
 import com.enterprise.assistant.backend.user.service.UserService;
 import jakarta.servlet.ServletException;
@@ -15,6 +16,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
+import org.stringtemplate.v4.ST;
 
 import java.io.IOException;
 
@@ -77,7 +79,7 @@ public class GoogleLoginSuccessHandler
                 oidcUser.getPicture()
         );
 
-        String jwt = jwtService.generateToken(user.getEmail());
+        String jwt = jwtService.generateToken(user.getEmail(), user.getRole());
 
         authCookieService.addAccessTokenCookie(
                 response,

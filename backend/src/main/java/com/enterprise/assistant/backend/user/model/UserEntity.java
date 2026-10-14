@@ -1,8 +1,14 @@
 package com.enterprise.assistant.backend.user.model;
 
+import com.enterprise.assistant.backend.user.enums.UserRole;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.Instant;
 
+@Getter
+@Setter
 @Entity
 @Table(
         name = "users",
@@ -38,6 +44,9 @@ public class UserEntity {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    @Column(name = "user_role", nullable = false)
+    private UserRole role;
+
     @PrePersist
     void onCreate() {
         Instant now = Instant.now();
@@ -48,49 +57,5 @@ public class UserEntity {
     @PreUpdate
     void onUpdate() {
         updatedAt = Instant.now();
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getGoogleSubject() {
-        return googleSubject;
-    }
-
-    public void setGoogleSubject(String googleSubject) {
-        this.googleSubject = googleSubject;
-    }
-
-    public String getFullName() {
-        return fullName;
-    }
-
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
-
-    public String getPictureUrl() {
-        return pictureUrl;
-    }
-
-    public void setPictureUrl(String pictureUrl) {
-        this.pictureUrl = pictureUrl;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public Instant getUpdatedAt() {
-        return updatedAt;
     }
 }

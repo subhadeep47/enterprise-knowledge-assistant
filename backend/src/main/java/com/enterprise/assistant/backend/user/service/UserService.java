@@ -1,8 +1,10 @@
 
 package com.enterprise.assistant.backend.user.service;
 
+import com.enterprise.assistant.backend.user.enums.UserRole;
 import com.enterprise.assistant.backend.user.model.UserEntity;
 import com.enterprise.assistant.backend.user.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,6 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private final UserRepository userRepository;
+    @Value("${app.security.admin-email}")
+    String adminEmail;
 
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
@@ -33,12 +37,21 @@ public class UserService {
 
         UserEntity user = userRepository
                 .findByGoogleSubject(googleSubject)
-                .orElseGet(() -> userRepository
-                        .findByEmailIgnoreCase(normalizedEmail)
-                        .orElseGet(UserEntity::new));
+                .orElse(null);
 
-        user.setGoogleSubject(googleSubject);
-        user.setEmail(normalizedEmail);
+        if (user == null) {
+            user = new UserEntity();
+            user.setGoogleSubject(googleSubject);
+            user.setEmail(normalizedEmail);
+
+            UserRole role = normalizedEmail.equalsIgnoreCase(adminEmail)
+                    ? UserRole.ADMIN
+                    : UserRole.EMPLOYEE;
+
+            user.setRole(role);
+        }
+
+        // Update profile fields for existing users.
         user.setFullName(fullName);
         user.setPictureUrl(pictureUrl);
 

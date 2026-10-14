@@ -5,9 +5,17 @@ spring:
   application:
     name: enterprise-assistant-backend
 
+  ai:
+    openai:
+      api-key: ${GROQ_API_KEY}
+      base-url: https://api.groq.com/openai/v1
+      chat:
+        options:
+          model: openai/gpt-oss-120b
+
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/enterprise_assistant}
-    username: ${DB_USERNAME:postgres}
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
 
   jpa:
@@ -31,7 +39,7 @@ spring:
               - email
 
 app:
-  frontend-url: ${FRONTEND_URL:http://localhost:5173}
+  frontend-url: ${FRONTEND_URL}
 
   jwt:
     # Generate a random 256-bit or stronger key and Base64-encode it.
@@ -41,3 +49,6 @@ app:
   cookie:
     secure: ${COOKIE_SECURE:false}
     same-site: Lax
+
+  security:
+    admin-email: ${APP_ADMIN_EMAIL}

@@ -4,6 +4,7 @@ package com.enterprise.assistant.backend.filter;
 import com.enterprise.assistant.backend.auth.service.AuthCookieService;
 
 import com.enterprise.assistant.backend.auth.service.JwtService;
+import com.enterprise.assistant.backend.user.enums.UserRole;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 
@@ -15,6 +16,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.security.authentication
         .UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication
         .WebAuthenticationDetailsSource;
@@ -53,23 +55,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             try {
                 Claims claims = jwtService.validateAndGetClaims(token);
-                String email = claims.getSubject();
 
-                if (email == null || email.isBlank()) {
-                    throw new JwtException("Missing JWT subject");
-                }
+                String email = claims.getSubject();
+                String role = claims.get("role", String.class);
+
+                UserRole userRole = UserRole.valueOf(role);
+
+                var authorities = List.of(
+                        new SimpleGrantedAuthority(
+                                "ROLE_" + userRole.name()
+                        )
+                );
 
                 var authentication =
                         new UsernamePasswordAuthenticationToken(
                                 email,
                                 null,
-                                List.of()
+                                authorities
                         );
-
-                authentication.setDetails(
-                        new WebAuthenticationDetailsSource()
-                                .buildDetails(request)
-                );
 
                 SecurityContextHolder.getContext()
                         .setAuthentication(authentication);

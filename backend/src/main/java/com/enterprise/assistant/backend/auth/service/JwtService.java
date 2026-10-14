@@ -1,11 +1,13 @@
 
 package com.enterprise.assistant.backend.auth.service;
 
+import com.enterprise.assistant.backend.user.enums.UserRole;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +19,7 @@ import java.util.Date;
 public class JwtService {
 
     private final SecretKey signingKey;
+    @Getter
     private final long expirationMs;
 
     public JwtService(
@@ -41,12 +44,13 @@ public class JwtService {
         this.expirationMs = expirationMs;
     }
 
-    public String generateToken(String email) {
+    public String generateToken(String email, UserRole role) {
         Instant now = Instant.now();
         Instant expiresAt = now.plusMillis(expirationMs);
 
         return Jwts.builder()
                 .subject(email)
+                .claim("role", role)
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(expiresAt))
                 .signWith(signingKey, Jwts.SIG.HS256)
@@ -59,14 +63,5 @@ public class JwtService {
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
-    }
-
-    public String extractEmail(String token) {
-        Claims claims = validateAndGetClaims(token);
-        return claims.getSubject();
-    }
-
-    public long getExpirationMs() {
-        return expirationMs;
     }
 }

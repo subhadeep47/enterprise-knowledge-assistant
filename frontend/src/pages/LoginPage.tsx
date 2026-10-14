@@ -1,13 +1,8 @@
-import { useState } from "react";
 import { ArrowUpRight, Bot, ShieldCheck } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
-import type { UserRole } from "../api/types";
-
-const DEMO_MODE = import.meta.env.VITE_DEMO_MODE !== "false";
 
 export default function LoginPage() {
   const { login } = useAuth();
-  const [demoRole, setDemoRole] = useState<UserRole>("EMPLOYEE");
   return (
     <main className="paper-grid min-h-screen bg-[#F4F0EA] p-4 text-[#171614] sm:p-7 lg:p-10">
       <div className="mx-auto grid min-h-[calc(100vh-2rem)] max-w-[1440px] grid-cols-1 border border-[#171614] bg-[#F4F0EA] lg:min-h-[calc(100vh-5rem)] lg:grid-cols-[1.45fr_.8fr]">
@@ -85,7 +80,7 @@ export default function LoginPage() {
               Sign in with your organisation's Google account to continue.
             </p>
             <button
-              onClick={() => login(demoRole)}
+              onClick={() => login()}
               className="group mt-9 flex w-full items-center justify-between border border-[#171614] bg-[#171614] px-5 py-4 text-left text-sm font-semibold text-[#F4F0EA] transition hover:bg-[#C85A32] hover:border-[#C85A32]"
             >
               <span className="flex items-center gap-3">
@@ -97,27 +92,6 @@ export default function LoginPage() {
                 className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
               />
             </button>
-            {DEMO_MODE && (
-              <div className="mt-4 border border-[#D6CEC3] p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="mono-label text-[9px] text-[#706B64]">
-                      Preview environment
-                    </p>
-                    <p className="mt-1 text-xs">Choose a demo role</p>
-                  </div>
-                  <select
-                    aria-label="Demo role"
-                    value={demoRole}
-                    onChange={(e) => setDemoRole(e.target.value as UserRole)}
-                    className="max-w-[140px] border border-[#D6CEC3] bg-transparent px-2 py-2 text-xs outline-none focus:border-[#C85A32]"
-                  >
-                    <option value="EMPLOYEE">Employee</option>
-                    <option value="ADMIN">Admin</option>
-                  </select>
-                </div>
-              </div>
-            )}
             <p className="mt-6 flex items-center gap-2 text-xs text-[#706B64]">
               <ShieldCheck size={15} className="text-[#C85A32]" />
               Secure access for your organisation
