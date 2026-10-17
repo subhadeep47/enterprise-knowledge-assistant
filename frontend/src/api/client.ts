@@ -28,20 +28,11 @@ async function initializeCsrf(): Promise<void> {
   csrfToken = data.token;
 }
 
-function readCookie(name: string): string | null {
-  const prefix = `${name}=`;
-  const cookie = document.cookie
-    .split("; ")
-    .find((entry) => entry.startsWith(prefix));
-
-  return cookie ? decodeURIComponent(cookie.slice(prefix.length)) : null;
-}
-
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const method = (init.method ?? "GET").toUpperCase();
   const safeMethod = ["GET", "HEAD", "OPTIONS", "TRACE"].includes(method);
 
-  if (!safeMethod && !csrfToken) {
+  if (!safeMethod) {
     await initializeCsrf();
   }
 

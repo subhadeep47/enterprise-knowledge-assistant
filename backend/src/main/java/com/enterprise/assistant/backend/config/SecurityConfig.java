@@ -4,6 +4,7 @@ package com.enterprise.assistant.backend.config;
 import com.enterprise.assistant.backend.auth.GoogleLoginSuccessHandler;
 
 import com.enterprise.assistant.backend.filter.JwtAuthenticationFilter;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -34,8 +35,8 @@ public class SecurityConfig {
 
     @Bean
     @Order(1)
-    public SecurityFilterChain apiSecurityFilterChain(
-            HttpSecurity http) throws Exception {
+    public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http)
+            throws Exception {
 
         CookieCsrfTokenRepository csrfRepository =
                 CookieCsrfTokenRepository.withHttpOnlyFalse();
@@ -48,29 +49,23 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
 
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                // Cookies are sent automatically by browsers, so retain CSRF
-                // protection for state-changing API requests.
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(csrfRepository)
-                        .csrfTokenRequestHandler(csrfHandler)
-                )
+                        .csrfTokenRequestHandler(csrfHandler))
 
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint(
-                                new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)
-                        )
-                )
+                                new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
 
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/csrf").permitAll()
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/employee/**").hasAnyRole("EMPLOYEE", "ADMIN")
                         .requestMatchers("/api/auth/logout").permitAll()
-                        .anyRequest().authenticated()
-                )
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/employee/**")
+                        .hasAnyRole("EMPLOYEE", "ADMIN")
+                        .anyRequest().authenticated())
 
                 .addFilterBefore(
                         jwtAuthenticationFilter,
@@ -87,7 +82,7 @@ public class SecurityConfig {
 
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/oauth2/**", "/login/**").permitAll()
+                        .requestMatchers("/error", "/oauth2/**", "/login/**").permitAll()
                         .anyRequest().denyAll()
                 )
 
@@ -96,5 +91,18 @@ public class SecurityConfig {
                 );
 
         return http.build();
+    }
+
+//    This helps avoid the JWT filter running twice for a request,
+//    since we are adding jwtauthenticationfilter already with .addFilterBefore
+    @Bean
+    public FilterRegistrationBean<JwtAuthenticationFilter>
+    jwtAuthenticationFilterRegistration(JwtAuthenticationFilter filter) {
+
+        FilterRegistrationBean<JwtAuthenticationFilter> registration =
+                new FilterRegistrationBean<>(filter);
+
+        registration.setEnabled(false);
+        return registration;
     }
 }

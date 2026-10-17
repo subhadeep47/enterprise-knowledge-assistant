@@ -47,12 +47,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [refreshUser]);
 
   const login = useCallback(() => api.loginWithGoogle(), []);
+
   const logout = useCallback(async () => {
     try {
       await api.logout();
-    } finally {
       setUser(null);
       window.location.href = "/login";
+    } catch (error) {
+      console.error("Logout API failed:", error);
+      throw error;
     }
   }, []);
 
