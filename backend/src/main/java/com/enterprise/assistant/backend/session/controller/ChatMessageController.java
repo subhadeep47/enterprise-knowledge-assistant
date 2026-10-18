@@ -5,7 +5,6 @@ import com.enterprise.assistant.backend.session.dtos.SendMessageRequest;
 import com.enterprise.assistant.backend.session.service.ChatMessageService;
 
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -15,10 +14,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/chat/sessions/{sessionId}/messages")
-@RequiredArgsConstructor
 public class ChatMessageController {
 
     private final ChatMessageService chatMessageService;
+
+    public ChatMessageController(ChatMessageService chatMessageService) {
+        this.chatMessageService = chatMessageService;
+    }
 
     @GetMapping
     public List<ChatMessageResponse> getMessages(
@@ -36,7 +38,7 @@ public class ChatMessageController {
             @Valid @RequestBody SendMessageRequest request,
             Authentication authentication) {
 
-        return chatMessageService.saveUserMessage(
+        return chatMessageService.sendMessage(
                 sessionId, authentication.getName(), request);
     }
 }

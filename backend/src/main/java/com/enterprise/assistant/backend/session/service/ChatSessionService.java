@@ -29,7 +29,7 @@ public class ChatSessionService {
 
         ChatSession session = new ChatSession();
         session.setUser(user);
-        session.setTitle("New conversation");
+        session.setTitle("New conversation"); //during session creation, will update with first user message.
 
         ChatSession saved = chatSessionRepository.save(session);
 

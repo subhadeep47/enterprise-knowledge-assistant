@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { api } from "../api/client";
 import type { ChatMessage } from "../api/types";
+import AssistantMarkdown from "./AssistantMarkdown";
 
 const suggestions = [
   {
@@ -73,7 +74,7 @@ export default function ChatPage() {
     }
     const userMessage: ChatMessage = {
       id: `local-${Date.now()}`,
-      role: "user",
+      role: "USER",
       content: clean,
       createdAt: new Date().toISOString(),
     };
@@ -219,29 +220,39 @@ export default function ChatPage() {
             {messages.map((message) => (
               <article
                 key={message.id}
-                className={`flex gap-3 ${message.role === "user" ? "flex-row-reverse" : ""}`}
+                className={`flex gap-3 ${message.role === "USER" ? "flex-row-reverse" : ""}`}
               >
                 <div
-                  className={`grid h-8 w-8 shrink-0 place-items-center ${message.role === "assistant" ? "bg-[#C85A32] text-[#F4F0EA]" : "border border-[#D6CEC3] bg-[#E9E2D8] text-[#171614]"}`}
+                  className={`grid h-8 w-8 shrink-0 place-items-center ${message.role === "ASSISTANT" ? "bg-[#C85A32] text-[#F4F0EA]" : "border border-[#D6CEC3] bg-[#E9E2D8] text-[#171614]"}`}
                 >
-                  {message.role === "assistant" ? (
+                  {message.role === "ASSISTANT" ? (
                     <Bot size={15} />
                   ) : (
                     <span className="mono-label text-[9px]">You</span>
                   )}
                 </div>
                 <div
-                  className={`min-w-0 max-w-[85%] ${message.role === "user" ? "text-right" : ""}`}
+                  className={`min-w-0 max-w-[85%] ${message.role === "USER" ? "text-right" : ""}`}
                 >
                   <div className="mono-label mb-2 text-[9px] text-[#706B64]">
-                    {message.role === "assistant"
+                    {message.role === "ASSISTANT"
                       ? "Knowledge assistant"
                       : "You"}
                   </div>
                   <div
-                    className={`whitespace-pre-wrap border px-4 py-3 text-sm leading-6 ${message.role === "assistant" ? "border-[#D6CEC3] bg-[#EEE8E0] text-[#171614]" : "border-[#171614] bg-[#171614] text-[#F4F0EA]"}`}
+                    className={`border px-4 py-3 text-sm leading-6 ${
+                      message.role === "ASSISTANT"
+                        ? "border-[#D6CEC3] bg-[#EEE8E0] text-[#171614]"
+                        : "border-[#171614] bg-[#171614] text-[#F4F0EA]"
+                    }`}
                   >
-                    {message.content}
+                    {message.role === "ASSISTANT" ? (
+                      <AssistantMarkdown content={message.content} />
+                    ) : (
+                      <div className="whitespace-pre-wrap break-words">
+                        {message.content}
+                      </div>
+                    )}
                   </div>
                   {!!message.sources?.length && (
                     <div className="mt-3 border border-[#D6CEC3] p-3">

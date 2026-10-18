@@ -21,7 +21,7 @@ export interface SourceReference {
 
 export interface ChatMessage {
   id: string;
-  role: "user" | "assistant";
+  role: "USER" | "ASSISTANT";
   content: string;
   createdAt: string;
   sources?: SourceReference[];
