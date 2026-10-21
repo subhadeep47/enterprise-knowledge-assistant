@@ -12,6 +12,15 @@ spring:
       chat:
         options:
           model: openai/gpt-oss-120b
+      embedding:
+        model: text-embedding-3-small
+        dimensions: 1536
+    vectorstore:
+      pgvector:
+        initialize-schema: true
+        dimensions: 1536
+        distance-type: COSINE_DISTANCE
+        index-type: HNSW
 
   datasource:
     url: ${DB_URL}
@@ -25,6 +34,11 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 30MB
 
   security:
     oauth2:
@@ -52,3 +66,9 @@ app:
 
   security:
     admin-email: ${APP_ADMIN_EMAIL}
+
+  supabase:
+    url: ${SUPABASE_URL}
+    secret-key: ${SUPABASE_SECRET_KEY}
+    storage:
+      bucket: ${SUPABASE_STORAGE_BUCKET}
