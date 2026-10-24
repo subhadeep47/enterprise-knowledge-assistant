@@ -1,4 +1,4 @@
-import type { ChatMessage, ChatSession, User } from "./types";
+import type { ChatMessage, ChatSession, KnowledgeBaseFile, User } from "./types";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
 
@@ -129,7 +129,7 @@ export const api = {
   uploadKnowledge: async (files: File[]) => {
     const form = new FormData();
     files.forEach((file) => form.append("files", file));
-    return request<{ uploaded: number }>("/api/admin/knowledge-base", {
+    return request<KnowledgeBaseFile[]>("/api/admin/knowledge-base", {
       method: "POST",
       body: form,
     });

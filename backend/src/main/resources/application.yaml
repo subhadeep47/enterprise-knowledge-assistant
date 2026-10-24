@@ -6,19 +6,20 @@ spring:
     name: enterprise-assistant-backend
 
   ai:
+    model:
+      embedding: transformers
+
     openai:
       api-key: ${GROQ_API_KEY}
       base-url: https://api.groq.com/openai/v1
       chat:
         options:
           model: openai/gpt-oss-120b
-      embedding:
-        model: text-embedding-3-small
-        dimensions: 1536
+
     vectorstore:
       pgvector:
         initialize-schema: true
-        dimensions: 1536
+        dimensions: 384
         distance-type: COSINE_DISTANCE
         index-type: HNSW
 

@@ -45,9 +45,36 @@ export default function AdminPage() {
     setSuccess("");
     try {
       const result = await api.uploadKnowledge(files);
-      setSuccess(
-        `${result.uploaded} file${result.uploaded === 1 ? "" : "s"} uploaded successfully. The knowledge base is being updated.`,
+      const completedFiles = result.filter(
+        (file) => file.status === "COMPLETED",
       );
+      const failedFiles = result.filter((file) => file.status === "FAILED");
+      const pendingFiles =
+        result.length - completedFiles.length - failedFiles.length;
+
+      if (completedFiles.length === result.length && result.length > 0) {
+        setSuccess(
+          `${result.length} file${result.length === 1 ? "" : "s"} uploaded successfully. The knowledge base is being updated.`,
+        );
+      } else if (result.length === 0) {
+        setSuccess("No upload results were returned.");
+      } else {
+        const failedNames = failedFiles
+          .map((file) => file.originalFilename)
+          .join(", ");
+        const failedMessage =
+          failedFiles.length > 0
+            ? ` ${failedFiles.length} failed${failedNames ? `: ${failedNames}` : ""}.`
+            : "";
+        const pendingMessage =
+          pendingFiles > 0
+            ? ` ${pendingFiles} ${pendingFiles === 1 ? "file is" : "files are"} still processing.`
+            : "";
+
+        setSuccess(
+          `${completedFiles.length} of ${result.length} files completed successfully.${failedMessage}${pendingMessage}`,
+        );
+      }
       setFiles([]);
     } catch {
       setError(

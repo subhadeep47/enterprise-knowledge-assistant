@@ -26,3 +26,11 @@ export interface ChatMessage {
   createdAt: string;
   sources?: SourceReference[];
 }
+
+export interface KnowledgeBaseFile {
+  id: number;
+  fileSizeBytes: number;
+  originalFilename: string;
+  createdAt: string;
+  status: "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
+}

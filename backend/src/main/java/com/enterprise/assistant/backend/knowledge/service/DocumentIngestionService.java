@@ -1,6 +1,7 @@
 
 package com.enterprise.assistant.backend.knowledge.service;
 
+import com.enterprise.assistant.backend.exception.DocumentIngestionException;
 import com.enterprise.assistant.backend.knowledge.enums.DocumentStatus;
 import com.enterprise.assistant.backend.knowledge.model.KnowledgeDocument;
 import com.enterprise.assistant.backend.knowledge.repository.KnowledgeDocumentRepository;
@@ -8,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
@@ -41,6 +41,11 @@ public class DocumentIngestionService {
 
             List<Document> chunks =
                     chunkingService.chunk(extractedText);
+
+            if (chunks.isEmpty()) {
+                throw new IllegalStateException(
+                        "No chunks were generated for document: " + documentId);
+            }
 
             List<Document> enrichedChunks =
                     addMetadata(chunks, document);
@@ -80,14 +85,12 @@ public class DocumentIngestionService {
         return enriched;
     }
 
-    @Transactional
     protected void markCompleted(KnowledgeDocument document) {
         document.setStatus(DocumentStatus.COMPLETED);
         document.setErrorMessage(null);
         documentRepository.save(document);
     }
 
-    @Transactional
     protected void markFailed(
             KnowledgeDocument document,
             Exception exception) {
@@ -105,14 +108,5 @@ public class DocumentIngestionService {
         document.setStatus(DocumentStatus.FAILED);
         document.setErrorMessage(message);
         documentRepository.save(document);
-    }
-
-    public static class DocumentIngestionException
-            extends RuntimeException {
-
-        public DocumentIngestionException(
-                String message, Throwable cause) {
-            super(message, cause);
-        }
     }
 }

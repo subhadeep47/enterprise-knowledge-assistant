@@ -1,11 +1,8 @@
 
 package com.enterprise.assistant.backend.knowledge.controller;
 
-import com.enterprise.assistant.backend.exception.DuplicateDocumentException;
-import com.enterprise.assistant.backend.exception.InvalidDocumentException;
 import com.enterprise.assistant.backend.knowledge.dtos.KnowledgeDocumentResponse;
-import com.enterprise.assistant.backend.knowledge.model.KnowledgeDocument;
-import com.enterprise.assistant.backend.knowledge.service.KnowledgeDocumentService;
+import com.enterprise.assistant.backend.knowledge.service.KnowledgeBaseService;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,7 +22,7 @@ import java.util.List;
 @Validated
 public class KnowledgeDocumentController {
 
-    private final KnowledgeDocumentService knowledgeDocumentService;
+    private final KnowledgeBaseService knowledgeBaseService;
 
     @PostMapping(consumes = "multipart/form-data")
     @ResponseStatus(HttpStatus.CREATED)
@@ -35,7 +32,8 @@ public class KnowledgeDocumentController {
 
         if (files.length == 0) {
             throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST, "At least one file is required");
+                    HttpStatus.BAD_REQUEST,
+                    "At least one file is required");
         }
 
         return Arrays.stream(files)
@@ -47,18 +45,7 @@ public class KnowledgeDocumentController {
             MultipartFile file, String email) {
 
         try {
-            KnowledgeDocument document =
-                    knowledgeDocumentService.upload(file, email);
-
-            return KnowledgeDocumentResponse.from(document);
-
-        } catch (DuplicateDocumentException ex) {
-            throw new ResponseStatusException(
-                    HttpStatus.CONFLICT, ex.getMessage(), ex);
-
-        } catch (InvalidDocumentException ex) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST, ex.getMessage(), ex);
+            return knowledgeBaseService.uploadAndIngest(file, email);
 
         } catch (IOException ex) {
             throw new ResponseStatusException(

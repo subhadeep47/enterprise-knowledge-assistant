@@ -87,6 +87,14 @@ public class KnowledgeDocumentService {
         }
     }
 
+    public KnowledgeDocument getById(Long documentId) {
+        return documentRepository.findById(documentId)
+                .orElseThrow(() ->
+                        new jakarta.persistence.EntityNotFoundException(
+                                "Knowledge document not found: " + documentId));
+    }
+
+
     private void validateFile(MultipartFile file) {
         if (file == null || file.isEmpty()) {
             throw new InvalidDocumentException(
@@ -95,7 +103,7 @@ public class KnowledgeDocumentService {
 
         if (file.getSize() > MAX_FILE_SIZE) {
             throw new InvalidDocumentException(
-                    "The maximum file size is 20 MB");
+                    "The maximum file size is 10 MB");
         }
 
         String contentType = file.getContentType();
