@@ -118,8 +118,13 @@ export const api = {
     });
   },
 
-  getMessages: async (sessionId: string): Promise<ChatMessage[]> => {
-    return request<ChatMessage[]>(`/api/chat/sessions/${sessionId}/messages`);
+  getMessages: async (
+    sessionId: string,
+    signal?: AbortSignal,
+  ): Promise<ChatMessage[]> => {
+    return request<ChatMessage[]>(`/api/chat/sessions/${sessionId}/messages`, {
+      signal,
+    });
   },
 
   sendMessage: async (

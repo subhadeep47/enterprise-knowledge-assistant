@@ -9,7 +9,7 @@ export interface User {
 }
 
 export interface ChatSession {
-  id: string;
+  id: number;
   title: string;
   updatedAt: string;
 }

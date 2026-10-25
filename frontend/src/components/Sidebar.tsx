@@ -18,12 +18,31 @@ export default function Sidebar() {
   const [sessionError, setSessionError] = useState("");
   const location = useLocation();
   const navigate = useNavigate();
+  const activeSessionId = new URLSearchParams(location.search).get("session");
   useEffect(() => {
-    if (user)
+    if (!user) return;
+
+    let active = true;
+    const loadSessions = () => {
       api
         .getSessions()
-        .then(setSessions)
-        .catch(() => setSessionError("History unavailable"));
+        .then((data) => {
+          if (active) {
+            setSessions(data);
+            setSessionError("");
+          }
+        })
+        .catch(() => {
+          if (active) setSessionError("History unavailable");
+        });
+    };
+
+    loadSessions();
+    window.addEventListener("eka:sessions-updated", loadSessions);
+    return () => {
+      active = false;
+      window.removeEventListener("eka:sessions-updated", loadSessions);
+    };
   }, [user]);
   const newChat = async () => {
     try {
@@ -91,7 +110,7 @@ export default function Sidebar() {
               key={session.id}
               onClick={() => navigate(`/chat?session=${session.id}`)}
               title={session.title}
-              className={`mb-1 flex w-full items-center gap-2 border-l-2 px-3 py-2.5 text-left text-xs transition ${location.search.includes(session.id) ? "border-[#C85A32] bg-[#F4F0EA] text-[#171614]" : "border-transparent text-[#706B64] hover:bg-[#F4F0EA] hover:text-[#171614]"}`}
+              className={`mb-1 flex w-full items-center gap-2 border-l-2 px-3 py-2.5 text-left text-xs transition ${activeSessionId === String(session.id) ? "border-[#C85A32] bg-[#F4F0EA] text-[#171614]" : "border-transparent text-[#706B64] hover:bg-[#F4F0EA] hover:text-[#171614]"}`}
             >
               <MessageSquare size={13} className="shrink-0" />
               <span className="truncate">{session.title}</span>

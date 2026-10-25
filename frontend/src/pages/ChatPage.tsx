@@ -1,15 +1,22 @@
-import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import {
+  FormEvent,
+  KeyboardEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import {
   ArrowUpRight,
   BookOpen,
   Bot,
   FileText,
+  LoaderCircle,
   LockKeyhole,
   Search,
 } from "lucide-react";
 import { api } from "../api/client";
-import type { ChatMessage } from "../api/types";
+import type { ChatMessage, ChatSession } from "../api/types";
 import AssistantMarkdown from "./AssistantMarkdown";
 
 const suggestions = [
@@ -32,61 +39,143 @@ const suggestions = [
     note: "Benefits, onboarding and people ops",
   },
 ];
+
+interface ChatNavigationState {
+  sessionId: string;
+  messages: ChatMessage[];
+}
+
 export default function ChatPage() {
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get("session");
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const navigationState =
+    location.state as ChatNavigationState | null;
+  const initialMessages =
+    navigationState?.sessionId === sessionId &&
+    Array.isArray(navigationState.messages)
+      ? navigationState.messages
+      : null;
+  const [messages, setMessages] = useState<ChatMessage[]>(
+    () => initialMessages ?? [],
+  );
+  const [loadedSessionId, setLoadedSessionId] = useState<string | null>(
+    () => (initialMessages ? sessionId : null),
+  );
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [startingConversation, setStartingConversation] = useState(false);
   const [error, setError] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const startingConversationRef = useRef(false);
+  const handledSeedSessionRef = useRef<string | null>(null);
+  const navigate = useNavigate();
+  const loadingSession = Boolean(sessionId && loadedSessionId !== sessionId);
+  const hasConversation = Boolean(sessionId) || startingConversation;
+
   useEffect(() => {
-    let active = true;
     setError("");
     if (!sessionId) {
+      if (startingConversationRef.current) return;
       setMessages([]);
+      setLoadedSessionId(null);
+      handledSeedSessionRef.current = null;
       return;
     }
+    if (initialMessages) {
+      handledSeedSessionRef.current = sessionId;
+      setLoadedSessionId(sessionId);
+      return;
+    }
+    if (handledSeedSessionRef.current === sessionId) return;
+
+    setMessages([]);
+    setLoadedSessionId(null);
+    let active = true;
+    const controller = new AbortController();
     api
-      .getMessages(sessionId)
+      .getMessages(sessionId, controller.signal)
       .then((data) => {
-        if (active) setMessages(data);
+        if (active) {
+          setMessages(data);
+          setLoadedSessionId(sessionId);
+        }
       })
-      .catch(() => {
-        if (active) setError("We couldn't load this conversation.");
+      .catch((loadError: unknown) => {
+        if (loadError instanceof Error && loadError.name === "AbortError")
+          return;
+        if (active) {
+          setError("We couldn't load this conversation.");
+          setLoadedSessionId(sessionId);
+        }
       });
     return () => {
       active = false;
+      controller.abort();
     };
-  }, [sessionId]);
+  }, [initialMessages, sessionId]);
+  useEffect(() => {
+    if (initialMessages && sessionId) {
+      navigate(`${location.pathname}${location.search}`, {
+        replace: true,
+        state: null,
+      });
+    }
+  }, [initialMessages, location.pathname, location.search, navigate, sessionId]);
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
   const send = async (content: string) => {
     const clean = content.trim();
     if (!clean || loading) return;
-    if (!sessionId) {
-      setError(
-        "Start a new conversation from the sidebar before sending a message.",
-      );
-      return;
-    }
     const userMessage: ChatMessage = {
       id: `local-${Date.now()}`,
       role: "USER",
       content: clean,
       createdAt: new Date().toISOString(),
     };
-    setMessages((current) => [...current, userMessage]);
     setInput("");
     setLoading(true);
     setError("");
+    let conversationStarted = Boolean(sessionId);
     try {
-      const response = await api.sendMessage(sessionId, clean);
+      let activeSessionId = sessionId;
+      if (!activeSessionId) {
+        startingConversationRef.current = true;
+        setStartingConversation(true);
+        setMessages([userMessage]);
+        const session: ChatSession = await api.createSession();
+        activeSessionId = String(session.id);
+        conversationStarted = true;
+        startingConversationRef.current = false;
+        setStartingConversation(false);
+        setLoadedSessionId(String(session.id));
+        window.dispatchEvent(new Event("eka:sessions-updated"));
+        navigate(`/chat?session=${session.id}`, {
+          state: {
+            sessionId: String(session.id),
+            messages: [userMessage],
+          },
+        });
+      } else {
+        setMessages((current) => [...current, userMessage]);
+      }
+
+      const response = await api.sendMessage(activeSessionId, clean);
       setMessages((current) => [...current, response]);
     } catch {
-      setError("Your message couldn't be sent. Please try again.");
+      if (!conversationStarted) {
+        startingConversationRef.current = false;
+        setStartingConversation(false);
+        setMessages([]);
+        setInput(clean);
+      }
+      setError(
+        conversationStarted
+          ? "Your message couldn't be sent. Please try again."
+          : "Couldn't start your conversation. Please try again.",
+      );
     } finally {
       setLoading(false);
       inputRef.current?.focus();
@@ -114,7 +203,22 @@ export default function ChatPage() {
         </div>
       </header>
       <div className="min-h-0 flex-1 overflow-y-auto">
-        {messages.length === 0 ? (
+        {loadingSession ? (
+          <div className="flex min-h-full flex-col items-center justify-center px-6 text-center">
+            <div className="grid h-11 w-11 place-items-center border border-[#D6CEC3] bg-[#F8F5F0] text-[#C85A32]">
+              <LoaderCircle size={19} className="animate-spin" />
+            </div>
+            <p className="mt-4 text-sm font-semibold">Opening conversation</p>
+            <p className="mt-1 text-xs text-[#706B64]">
+              Your messages will be ready in a moment.
+            </p>
+            <div className="mt-6 w-full max-w-sm space-y-2" aria-hidden="true">
+              <div className="h-2 animate-pulse bg-[#E9E2D8]" />
+              <div className="h-2 w-4/5 animate-pulse bg-[#E9E2D8]" />
+              <div className="h-2 w-3/5 animate-pulse bg-[#E9E2D8]" />
+            </div>
+          </div>
+        ) : !hasConversation ? (
           <div className="mx-auto grid min-h-full max-w-[1240px] grid-cols-1 gap-8 px-5 py-8 sm:px-8 lg:grid-cols-[minmax(0,1.65fr)_minmax(220px,.7fr)] lg:gap-12 lg:px-12 lg:py-12">
             <section className="flex flex-col justify-center">
               <p className="mono-label mb-5 flex items-center gap-3 text-[10px] text-[#C85A32]">
@@ -216,7 +320,7 @@ export default function ChatPage() {
             </aside>
           </div>
         ) : (
-          <div className="mx-auto max-w-3xl space-y-7 px-5 py-8 sm:px-8">
+          <div className="w-full space-y-7 px-5 py-8 sm:px-8 lg:px-10">
             {messages.map((message) => (
               <article
                 key={message.id}
@@ -286,7 +390,9 @@ export default function ChatPage() {
                   <Bot size={15} />
                 </div>
                 <div className="border border-[#D6CEC3] bg-[#EEE8E0] px-4 py-3 text-sm text-[#706B64]">
-                  Working on an answer…
+                  {startingConversation
+                    ? "Starting your conversation…"
+                    : "Working on an answer…"}
                 </div>
               </div>
             )}
@@ -312,11 +418,12 @@ export default function ChatPage() {
             placeholder="Ask a question about your workplace…"
             rows={1}
             aria-label="Message the knowledge assistant"
+            disabled={loading || loadingSession}
             className="max-h-36 min-h-10 flex-1 resize-y bg-transparent py-2 text-sm leading-6 text-[#171614] outline-none placeholder:text-[#8A8177]"
           />
           <button
             type="submit"
-            disabled={!input.trim() || loading}
+            disabled={!input.trim() || loading || loadingSession}
             aria-label="Send message"
             className="grid h-10 w-10 shrink-0 place-items-center bg-[#C85A32] text-[#F4F0EA] transition hover:bg-[#A94321]"
           >
