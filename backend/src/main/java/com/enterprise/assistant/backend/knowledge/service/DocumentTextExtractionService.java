@@ -1,6 +1,7 @@
 
 package com.enterprise.assistant.backend.knowledge.service;
 
+import com.enterprise.assistant.backend.exception.DocumentExtractionException;
 import com.enterprise.assistant.backend.knowledge.model.KnowledgeDocument;
 import lombok.RequiredArgsConstructor;
 import org.apache.pdfbox.Loader;
@@ -37,7 +38,11 @@ public class DocumentTextExtractionService {
             // Normalize whitespace while retaining paragraph boundaries.
             extractedText = extractedText
                     .replace("\r\n", "\n")
-                    .replace('\r', '\n');
+                    .replace('\r', '\n')
+                    .replaceAll("[\\t\\x0B\\f ]+", " ")
+                    .replaceAll(" *\\n *", "\n")
+                    .replaceAll("\\n{3,}", "\n\n")
+                    .trim();
 
             StringBuilder normalized = new StringBuilder();
 
@@ -68,19 +73,6 @@ public class DocumentTextExtractionService {
         } catch (IOException exception) {
             throw new DocumentExtractionException(
                     "Unable to parse the uploaded PDF", exception);
-        }
-    }
-
-    public static class DocumentExtractionException
-            extends RuntimeException {
-
-        public DocumentExtractionException(String message) {
-            super(message);
-        }
-
-        public DocumentExtractionException(
-                String message, Throwable cause) {
-            super(message, cause);
         }
     }
 }

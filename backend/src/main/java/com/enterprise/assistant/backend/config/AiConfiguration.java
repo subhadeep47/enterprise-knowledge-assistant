@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class AiConfiguration {
 
+    //Not in use
     @Bean
     public TokenTextSplitter tokenTextSplitter() {
         return TokenTextSplitter.builder()

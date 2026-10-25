@@ -6,6 +6,7 @@ import com.enterprise.assistant.backend.knowledge.enums.DocumentStatus;
 import com.enterprise.assistant.backend.knowledge.model.KnowledgeDocument;
 import com.enterprise.assistant.backend.knowledge.repository.KnowledgeDocumentRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class DocumentIngestionService {
 
@@ -46,6 +48,13 @@ public class DocumentIngestionService {
                 throw new IllegalStateException(
                         "No chunks were generated for document: " + documentId);
             }
+
+            log.info(
+                    "Extracted {} characters and generated {} chunks for document {}",
+                    extractedText.length(),
+                    chunks.size(),
+                    documentId
+            );
 
             List<Document> enrichedChunks =
                     addMetadata(chunks, document);
