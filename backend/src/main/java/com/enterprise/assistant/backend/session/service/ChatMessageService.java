@@ -1,6 +1,7 @@
 
 package com.enterprise.assistant.backend.session.service;
 
+import com.enterprise.assistant.backend.ai.service.AIService;
 import com.enterprise.assistant.backend.session.dtos.ChatMessageResponse;
 import com.enterprise.assistant.backend.session.dtos.SendMessageRequest;
 import com.enterprise.assistant.backend.session.enums.MessageRole;
@@ -31,7 +32,7 @@ public class ChatMessageService {
     private final ChatMessageRepository chatMessageRepository;
     private final ChatSessionRepository chatSessionRepository;
     private final UserRepository userRepository;
-    private final ChatClient.Builder chatClientBuilder;
+    private final AIService aiService;
 
     private final String SYSTEM_PROMPT = """
                         You are an enterprise knowledge and support assistant.
@@ -85,19 +86,8 @@ public class ChatMessageService {
                 .map(this::toAiMessage)
                 .toList();
 
-        // 3. Generate a response using Spring AI.
-        ChatClient chatClient = chatClientBuilder.build();
-
-        String answer = chatClient.prompt()
-                .system(SYSTEM_PROMPT)
-                .messages(history.toArray(Message[]::new))
-                .call()
-                .content();
-
-        if (answer == null || answer.isBlank()) {
-            throw new IllegalStateException(
-                    "The AI model returned an empty response");
-        }
+        // 3. Generate a response using retrieved knowledge and chat history.
+        String answer = aiService.generateAnswer(content, history);
 
         // 4. Persist the assistant's response.
         ChatMessage assistantMessage = new ChatMessage();
