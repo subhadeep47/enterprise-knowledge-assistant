@@ -24,6 +24,11 @@ public class KnowledgeDocumentController {
 
     private final KnowledgeBaseService knowledgeBaseService;
 
+    @GetMapping
+    public List<KnowledgeDocumentResponse> getDocuments() {
+        return knowledgeBaseService.getDocuments();
+    }
+
     @PostMapping(consumes = "multipart/form-data")
     @ResponseStatus(HttpStatus.CREATED)
     public List<KnowledgeDocumentResponse> uploadDocuments(

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -35,5 +36,11 @@ public class KnowledgeBaseService {
                 knowledgeDocumentService.getById(document.getId());
 
         return KnowledgeDocumentResponse.from(latestDocument);
+    }
+
+    public List<KnowledgeDocumentResponse> getDocuments() {
+        return knowledgeDocumentService.getAll().stream()
+                .map(KnowledgeDocumentResponse::from)
+                .toList();
     }
 }

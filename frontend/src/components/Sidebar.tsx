@@ -37,7 +37,7 @@ export default function Sidebar() {
   const navClass = (active: boolean) =>
     `flex items-center gap-3 border-l-2 px-3 py-3 text-sm transition ${active ? "border-[#C85A32] bg-[#E9E2D8] font-semibold text-[#171614]" : "border-transparent text-[#706B64] hover:border-[#D6CEC3] hover:bg-[#EEE8E0] hover:text-[#171614]"}`;
   return (
-    <aside className="flex w-[272px] shrink-0 flex-col border-r border-[#D6CEC3] bg-[#EEE8E0] max-md:w-[68px]">
+    <aside className="sticky top-0 flex h-screen max-h-screen w-[272px] shrink-0 self-start flex-col border-r border-[#D6CEC3] bg-[#EEE8E0] max-md:w-[68px]">
       <div className="flex h-[76px] items-center gap-3 border-b border-[#D6CEC3] px-5 max-md:justify-center max-md:px-2">
         <div className="grid h-9 w-9 place-items-center bg-[#C85A32] text-[#F4F0EA]">
           <Bot size={19} />

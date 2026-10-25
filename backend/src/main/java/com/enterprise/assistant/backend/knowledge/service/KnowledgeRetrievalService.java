@@ -5,18 +5,25 @@ import java.util.List;
 import java.util.Map;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class KnowledgeRetrievalService {
 
     private static final int DEFAULT_TOP_K = 5;
     private static final int MAX_TOP_K = 10;
+
+    @Value("${app.retrieval.similarity-threshold:0.0}")
+    private double similarityThreshold;
 
     private final VectorStore vectorStore;
 
@@ -38,18 +45,33 @@ public class KnowledgeRetrievalService {
         SearchRequest searchRequest = SearchRequest.builder()
                 .query(question)
                 .topK(topK)
+                .similarityThreshold(similarityThreshold)
                 .build();
 
         List<Document> documents =
                 vectorStore.similaritySearch(searchRequest);
 
         if (documents == null || documents.isEmpty()) {
+            log.info("No chunks retrieved for the question");
             return List.of();
         }
 
-        return documents.stream()
+        List<RetrievedChunk> chunks = documents.stream()
                 .map(this::toRetrievedChunk)
                 .toList();
+
+        log.info("Retrieved {} chunks", chunks.size());
+
+        chunks.forEach(chunk ->
+                log.info(
+                        "Retrieved source={}, chunkIndex={}, score={}",
+                        chunk.source(),
+                        chunk.chunkIndex(),
+                        chunk.score()
+                )
+        );
+
+        return chunks;
     }
 
     private RetrievedChunk toRetrievedChunk(Document document) {
@@ -59,7 +81,8 @@ public class KnowledgeRetrievalService {
                 document.getText(),
                 metadata.get("documentId"),
                 metadata.get("chunkIndex"),
-                metadata.get("source")
+                metadata.get("source"),
+                document.getScore()
         );
     }
 
@@ -67,7 +90,8 @@ public class KnowledgeRetrievalService {
             String content,
             Object documentId,
             Object chunkIndex,
-            Object source
+            Object source,
+            Double score
     ) {
     }
 }

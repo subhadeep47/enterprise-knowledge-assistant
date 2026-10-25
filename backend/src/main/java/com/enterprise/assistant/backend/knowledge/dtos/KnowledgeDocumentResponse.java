@@ -10,16 +10,33 @@ public record KnowledgeDocumentResponse(
         String originalFilename,
         String status,
         Long fileSizeBytes,
-        Instant createdAt
+        Instant createdAt,
+        String contentType,
+        String errorMessage,
+        UploadedByResponse uploadedBy,
+        Instant updatedAt
 ) {
     public static KnowledgeDocumentResponse from(
             KnowledgeDocument document) {
+        var uploader = document.getUploadedBy();
         return new KnowledgeDocumentResponse(
                 document.getId(),
                 document.getOriginalFilename(),
                 document.getStatus().name(),
                 document.getFileSizeBytes(),
-                document.getCreatedAt()
+                document.getCreatedAt(),
+                document.getContentType(),
+                document.getErrorMessage(),
+                new UploadedByResponse(
+                        uploader.getFullName() == null
+                                ? uploader.getEmail()
+                                : uploader.getFullName(),
+                        uploader.getEmail()
+                ),
+                document.getUpdatedAt()
         );
+    }
+
+    public record UploadedByResponse(String name, String email) {
     }
 }

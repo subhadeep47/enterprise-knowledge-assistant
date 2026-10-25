@@ -1,4 +1,10 @@
-import type { ChatMessage, ChatSession, KnowledgeBaseFile, User } from "./types";
+import type {
+  ChatMessage,
+  ChatSession,
+  KnowledgeBaseDocument,
+  KnowledgeBaseFile,
+  User,
+} from "./types";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
 
@@ -133,5 +139,9 @@ export const api = {
       method: "POST",
       body: form,
     });
+  },
+
+  getKnowledgeBaseDocuments: async (): Promise<KnowledgeBaseDocument[]> => {
+    return request<KnowledgeBaseDocument[]>("/api/admin/knowledge-base");
   },
 };

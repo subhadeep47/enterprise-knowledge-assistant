@@ -32,5 +32,21 @@ export interface KnowledgeBaseFile {
   fileSizeBytes: number;
   originalFilename: string;
   createdAt: string;
-  status: "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
+  status: DocumentStatus;
+}
+
+export type DocumentStatus =
+  | "PENDING"
+  | "PROCESSING"
+  | "COMPLETED"
+  | "FAILED";
+
+export interface KnowledgeBaseDocument extends KnowledgeBaseFile {
+  contentType: string;
+  errorMessage: string | null;
+  uploadedBy: {
+    name: string;
+    email: string;
+  };
+  updatedAt: string;
 }

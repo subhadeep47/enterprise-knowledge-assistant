@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -92,6 +93,11 @@ public class KnowledgeDocumentService {
                 .orElseThrow(() ->
                         new jakarta.persistence.EntityNotFoundException(
                                 "Knowledge document not found: " + documentId));
+    }
+
+    @Transactional(readOnly = true)
+    public List<KnowledgeDocument> getAll() {
+        return documentRepository.findAllByOrderByCreatedAtDesc();
     }
 
 
