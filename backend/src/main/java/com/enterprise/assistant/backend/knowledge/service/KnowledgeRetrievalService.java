@@ -28,10 +28,18 @@ public class KnowledgeRetrievalService {
     private final VectorStore vectorStore;
 
     public List<RetrievedChunk> retrieve(String question) {
-        return retrieve(question, DEFAULT_TOP_K);
+        return retrieve(question, DEFAULT_TOP_K, null);
     }
 
     public List<RetrievedChunk> retrieve(String question, int topK) {
+        return retrieve(question, topK, null);
+    }
+
+    public List<RetrievedChunk> retrieve(
+            String question,
+            int topK,
+            Long documentId
+    ) {
         if (!StringUtils.hasText(question)) {
             throw new IllegalArgumentException(
                     "Search question must not be blank");
@@ -42,11 +50,18 @@ public class KnowledgeRetrievalService {
                     "topK must be between 1 and " + MAX_TOP_K);
         }
 
-        SearchRequest searchRequest = SearchRequest.builder()
+        SearchRequest.Builder searchBuilder = SearchRequest.builder()
                 .query(question)
                 .topK(topK)
-                .similarityThreshold(similarityThreshold)
-                .build();
+                .similarityThreshold(similarityThreshold);
+
+        if (documentId != null) {
+            searchBuilder.filterExpression(
+                    "documentId == " + documentId
+            );
+        }
+
+        SearchRequest searchRequest = searchBuilder.build();
 
         List<Document> documents =
                 vectorStore.similaritySearch(searchRequest);
@@ -62,14 +77,13 @@ public class KnowledgeRetrievalService {
 
         log.info("Retrieved {} chunks", chunks.size());
 
-        chunks.forEach(chunk ->
-                log.info(
-                        "Retrieved source={}, chunkIndex={}, score={}",
-                        chunk.source(),
-                        chunk.chunkIndex(),
-                        chunk.score()
-                )
-        );
+        chunks.forEach(chunk -> log.info(
+                "Retrieved source={}, documentId={}, chunkIndex={}, score={}",
+                chunk.source(),
+                chunk.documentId(),
+                chunk.chunkIndex(),
+                chunk.score()
+        ));
 
         return chunks;
     }

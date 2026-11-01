@@ -34,13 +34,6 @@ public class ChatMessageService {
     private final UserRepository userRepository;
     private final AIService aiService;
 
-    private final String SYSTEM_PROMPT = """
-                        You are an enterprise knowledge and support assistant.
-                        Be helpful, accurate, and professional.
-                        If you do not know an answer, say so honestly.
-                        Do not invent company policies or internal information.
-                        """;
-
     public List<ChatMessageResponse> getMessages(
             Long sessionId, String email) {
 
